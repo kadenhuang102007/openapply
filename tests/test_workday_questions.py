@@ -1,7 +1,7 @@
 """The standard Workday questions: agreements, signature, dates, and compliance topics."""
 
 from openapply.apply.answers import agree_option, answer_text, topic_for
-from openapply.apply.workday import parse_full_date
+from openapply.apply.workday import experience_entries, parse_full_date
 
 
 def test_workday_standard_questions_map_to_topics():
@@ -43,3 +43,17 @@ def test_parse_full_date_and_today():
     month, day, year = parse_full_date("today")
     assert month and day and year >= 2026
     assert answer_text("today").count("/") == 2
+
+
+def test_work_history_follows_the_resume_being_sent():
+    profile = {
+        "experience": [{"company": "Fallback Co", "title": "Fallback"}],
+        "extra_experience": [{"company": "Always Inc", "title": "Volunteer"}],
+        "resumes": {"variants": {
+            "pm": {"pdf": "/x/Resume_PM.pdf", "experience": [{"company": "Acme", "title": "Growth Marketer"}]},
+            "swe": {"pdf": "/x/Resume_SWE.pdf", "experience": [{"company": "Acme", "title": "GTM Engineer"}]},
+        }},
+    }
+    assert [e["title"] for e in experience_entries(profile, "/elsewhere/Resume_SWE.pdf")] == ["GTM Engineer", "Volunteer"]
+    assert [e["title"] for e in experience_entries(profile, "/x/Resume_PM.pdf")] == ["Growth Marketer", "Volunteer"]
+    assert [e["title"] for e in experience_entries(profile, None)] == ["Fallback", "Volunteer"]

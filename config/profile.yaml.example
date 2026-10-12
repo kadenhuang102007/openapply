@@ -35,6 +35,10 @@ education:
     field_of_study: Data Science
     start: August 2025
     end: May 2028
+# Work history for Workday-style forms. You can also put an `experience:` list under each resume
+# variant (resumes.variants.<name>.experience) so the wording matches the resume being sent, and an
+# `extra_experience:` list here for activities you add to every application.
+extra_experience: []
 experience:
   - company: Example Corp
     title: Software Engineering Intern

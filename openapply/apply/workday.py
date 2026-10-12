@@ -368,8 +368,23 @@ def workday_values(profile: dict, saved: SavedAnswers | None = None) -> dict[str
     }
 
 
-def experience_entries(profile: dict) -> list[dict]:
-    return [e for e in (profile.get("experience") or []) if isinstance(e, dict) and (e.get("company") or e.get("title"))]
+def experience_entries(profile: dict, resume_pdf=None) -> list[dict]:
+    """Work history for this application, in the exact wording of the resume being sent.
+
+    Looks for an `experience:` list under the resume variant whose pdf matches `resume_pdf`
+    (resumes.variants.<name>.experience); falls back to the profile's top-level `experience`.
+    `extra_experience` (activities you add to every application) is appended either way."""
+    chosen = None
+    if resume_pdf:
+        for v in ((profile.get("resumes") or {}).get("variants") or {}).values():
+            if isinstance(v, dict) and v.get("experience") and v.get("pdf") \
+                    and Path(str(v["pdf"])).name == Path(str(resume_pdf)).name:
+                chosen = v["experience"]
+                break
+    if chosen is None:
+        chosen = profile.get("experience") or []
+    entries = list(chosen) + list(profile.get("extra_experience") or [])
+    return [e for e in entries if isinstance(e, dict) and (e.get("company") or e.get("title"))]
 
 
 def education_entries(profile: dict) -> list[dict]:
@@ -957,7 +972,7 @@ def _upload_resume(flow: WorkdayFlow, step: str) -> None:
 def fill_my_experience(flow: WorkdayFlow, step: str = "my_experience") -> list[dict]:
     p = flow.profile
     _upload_resume(flow, step)
-    _fill_repeating(flow, step, "work", r"work experience", "Work Experience", experience_entries(p))
+    _fill_repeating(flow, step, "work", r"work experience", "Work Experience", experience_entries(p, flow.resume_pdf))
     _fill_repeating(flow, step, "education", r"^education", "Education", education_entries(p))
     fields = flow.collect()
     has_linkedin_box = any(field_role(f) == "linkedin" for f in fields)
