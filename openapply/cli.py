@@ -6,6 +6,11 @@
     openapply show <job_id>            details, flags, and match explanation for one job
     openapply tailor <job_id> [--llm]  draft cover letter + answers, run the fabrication check
     openapply apply <job_id>           open the form, pre-fill it, STOP for you to submit
+                 [--wait-seconds N] [--learn] [--submit]   (Greenhouse/Lever/Ashby/Workday)
+    openapply add <url> [<url> ...]    ingest a posting you found -> score -> tailor -> fill
+                                       (-> auto-submit if on and every guardrail passes) -> text you
+    openapply autopilot --top N        the same for your top N eligible ranked jobs
+    openapply todo                     jobs where add/autopilot stopped and needs you, with the reason
     openapply mark <job_id> <status>   new|shortlisted|filled|submitted|interview|rejected|offer
     openapply export [--to csv|sheets|both]
     openapply daily [--dry-run]        discover -> filter -> rank -> diff -> iMessage alert
@@ -179,37 +184,138 @@ def tailor(job_id: str, llm: bool = typer.Option(False, "--llm", help="Draft wit
         console.print(f"saved {f.relative_to(PROJECT_ROOT)}")
 
 
+def _offer_to_learn(report, company: str, learn: bool) -> None:
+    """Offer to save the choices you made on the page as saved answers (config/answers.yaml)."""
+    from .apply.answers import ANSWERS_PATH, SavedAnswers, learn_candidates, save_answers
+    from .apply.session import ask_yes_no, stdin_is_tty
+
+    captured = list((getattr(report, "captured", None) or {}).values())
+    items = learn_candidates(captured, SavedAnswers.load(), company)
+    if not items:
+        return
+    console.print(f"\n[bold]{len(items)} answer(s) you picked aren't saved yet:[/bold]")
+    for it in items:
+        was = f"  (was {it.previous!r})" if it.previous else ""
+        console.print(f"  {it.label[:80]}  ->  {it.value!r}{was}", markup=False)
+    if learn or (stdin_is_tty() and ask_yes_no(f"Save them to {ANSWERS_PATH.relative_to(PROJECT_ROOT)}?", False)):
+        path = save_answers(items)
+        console.print(f"Saved {len(items)} answer(s) to {path.relative_to(PROJECT_ROOT)}.")
+    elif not stdin_is_tty():
+        console.print("[dim]Not saved (no terminal to ask). Re-run with --learn to save them.[/dim]")
+
+
 @app.command()
 def apply(job_id: str,
           close_after: bool = typer.Option(False, help="Close the browser right after filling (for testing)."),
-          headless: bool = typer.Option(False, help="Run without a visible window (testing only).")):
-    """Open the application, pre-fill it, and STOP. You review and click Submit."""
-    from .apply.filler import fill_application
+          headless: bool = typer.Option(False, help="Run without a visible window (testing only)."),
+          wait_seconds: Optional[int] = typer.Option(
+              None, "--wait-seconds", help="Keep the browser open N seconds, then close (for non-interactive use)."),
+          learn: bool = typer.Option(False, "--learn", help="Save the choices you made as saved answers without asking."),
+          submit: bool = typer.Option(False, "--submit",
+                                      help="Auto-submit if `auto_submit: true` in your profile AND every guardrail passes.")):
+    """Open the application, pre-fill it, and STOP. You review and click Submit (unless --submit and all guardrails pass)."""
+    from .apply.session import ask_yes_no, stdin_is_tty
+    from .runner import fill_kind, process_job
 
     tracker, profile = Tracker(), load_profile()
     row = _row_or_exit(tracker, job_id)
     job = tracker.job(row)
-    if job.ats == "other":
-        console.print("[yellow]This posting isn't on Greenhouse/Lever/Ashby; openapply can't pre-fill it.[/yellow]")
+    kind = fill_kind(job)
+    if kind is None:
+        console.print("[yellow]This posting isn't on Greenhouse/Lever/Ashby/Workday; openapply can't pre-fill it.[/yellow]")
         console.print(f"Open it yourself: {job.url}")
         raise typer.Exit(1)
-    resume = _resume_for(row, profile)
-    gen = GENERATED_DIR / job.id
-    answers = json.loads((gen / "answers.json").read_text()) if (gen / "answers.json").exists() else {}
-    letter = (gen / "cover_letter.md").read_text() if (gen / "cover_letter.md").exists() else None
-    if not answers:
+    if kind == "workday":
+        console.print("Workday: using the saved browser profile in data/browser-profile/ (sign in once per company).")
+    elif not (GENERATED_DIR / job.id / "answers.json").exists():
         console.print("[dim]No drafted answers yet (run `openapply tailor` first to fill long-answer boxes).[/dim]")
-    console.print(f"Opening {job.url}\nResume: {resume.pdf}")
-    report = fill_application(job, profile, resume.pdf, answers, letter, close_after=close_after, headless=headless)
-    if close_after:
+    if wait_seconds is None and not close_after and not stdin_is_tty():
+        console.print("[dim]stdin is not a terminal: the browser stays open until you close it "
+                      "(or pass --wait-seconds N).[/dim]")
+    console.print(f"Opening {job.url}")
+    result = process_job(tracker, row, profile, submit=submit, attended=not close_after, headless=headless, tailor=False,
+                         wait_seconds=wait_seconds, say=lambda m: console.print(m, markup=False))
+    report = result.report
+    for w in result.warnings:
+        console.print(f"[yellow]warning:[/yellow] {w}")
+    if close_after and report is not None:
         console.print(f"Filled {len(report.filled)}, left {len(report.not_filled)}; captcha={report.captcha_present}; "
-                      f"log: generated/{job.id}/fill_log.json" + (f"; error: {report.error}" if report.error else ""))
-    if row["status"] in ("new", "shortlisted"):
-        tracker.mark(row["id"], "filled")
-    if not close_after:
-        if typer.confirm("Did you click Submit?", default=False):
+                      + (f"stopped at: {report.stopped_at}; " if report.stopped_at else "")
+                      + f"log: generated/{job.id}/fill_log.json" + (f"; error: {report.error}" if report.error else ""))
+    if result.status == "submitted":
+        console.print(f"[green]Submitted.[/green] Receipt: {result.receipt}")
+    elif submit:
+        console.print(f"[yellow]Not auto-submitted:[/yellow] {result.reason}")
+    if report is not None and not close_after:
+        _offer_to_learn(report, job.company, learn)
+    if result.status != "submitted" and not close_after and stdin_is_tty():
+        if ask_yes_no("Did you click Submit?", default=False):
             tracker.mark(row["id"], "submitted")
             console.print("Marked submitted.")
+
+
+def _print_results(results) -> None:
+    t = Table(title="Results")
+    for c in ("id", "company", "role", "result", "reason"):
+        t.add_column(c, overflow="fold")
+    for r in results:
+        style = {"submitted": "green", "would_submit": "cyan"}.get(r.status, "yellow")
+        t.add_row(r.job_id, r.company, r.title[:50], f"[{style}]{r.status}[/{style}]", r.reason[:120])
+    console.print(t)
+    sub = sum(r.status == "submitted" for r in results)
+    console.print(f"Submitted {sub}; needs you {sum(r.status == 'needs_you' for r in results)}; "
+                  f"other {len(results) - sub - sum(r.status == 'needs_you' for r in results)}. "
+                  "See `openapply todo` for what needs you.")
+
+
+@app.command()
+def add(urls: list[str] = typer.Argument(..., help="One or more Greenhouse/Lever/Ashby/Workday posting links."),
+        dry_run: bool = typer.Option(False, "--dry-run",
+                                     help="Do everything except submit; print the text message instead of sending it."),
+        headless: bool = typer.Option(False, help="Run the browser without a window."),
+        no_text: bool = typer.Option(False, "--no-text", help="Don't send the iMessage."),
+        wait_seconds: Optional[int] = typer.Option(
+            None, "--wait-seconds", help="When the browser waits for you, close it after N seconds.")):
+    """Ingest posting links you found -> score -> tailor -> fill -> (auto-submit if on and safe) -> text you."""
+    from .runner import run_add
+
+    run_add(urls, dry_run=dry_run, headless=headless, notify=not no_text, console=console,
+            wait_seconds=wait_seconds)
+
+
+@app.command()
+def autopilot(top: int = typer.Option(10, help="How many of your top-ranked eligible jobs to process."),
+              dry_run: bool = typer.Option(False, "--dry-run", help="Fill and check guardrails, never submit or text."),
+              headless: bool = typer.Option(False, help="Run the browser without a window."),
+              family: str = typer.Option(None, help="Only one role family: pm | swe | ds | ml."),
+              no_text: bool = typer.Option(False, "--no-text", help="Don't send iMessages.")):
+    """Run `apply --submit` over your top N eligible jobs; print submitted vs needs-you."""
+    from .runner import run_autopilot
+
+    run_autopilot(top, dry_run=dry_run, headless=headless, family=family, notify=not no_text, console=console)
+
+
+@app.command()
+def todo(done: Optional[str] = typer.Option(None, "--done", help="Clear one job from the list.")):
+    """Jobs where add/autopilot stopped and needs you (sign in, CAPTCHA, an unanswered question...)."""
+    tracker = Tracker()
+    if done:
+        row = _row_or_exit(tracker, done)
+        tracker.resolve_todo(row["id"])
+        console.print(f"Cleared {row['id']}.")
+        return
+    rows = tracker.todos()
+    if not rows:
+        console.print("Nothing needs you. 🎉")
+        return
+    t = Table(title=f"Action required ({len(rows)})")
+    for c in ("id", "company", "role", "why", "since"):
+        t.add_column(c, overflow="fold")
+    for r in rows:
+        t.add_row(r["job_id"], r["company"] or "", (r["title"] or "")[:50], r["reason"], r["at"][:16])
+    console.print(t)
+    console.print("Clear one with `openapply apply <id>` (it opens the form so you can finish), "
+                  "then `openapply mark <id> submitted`, or `openapply todo --done <id>`.")
 
 
 @app.command()

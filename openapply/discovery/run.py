@@ -118,11 +118,14 @@ def discover_all(client: PoliteClient, include_community: bool = True) -> tuple[
     return unique, stats
 
 
+API_ATS = ("greenhouse", "lever", "ashby")  # ATSs with a public description API
+
+
 def enrich_descriptions(client: PoliteClient, jobs: list[Job], limit: int = 400) -> int:
     """Fetch descriptions for ATS-hosted jobs that lack one. Returns how many were filled."""
     filled = 0
     ashby_boards: dict[str, dict[str, str]] = {}
-    todo = [j for j in jobs if not j.has_description and j.ats != "other" and j.ats_board and j.ats_job_id]
+    todo = [j for j in jobs if not j.has_description and j.ats in API_ATS and j.ats_board and j.ats_job_id]
     for job in todo[:limit]:
         try:
             if job.ats == "greenhouse":

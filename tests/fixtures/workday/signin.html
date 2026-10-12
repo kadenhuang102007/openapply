@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<!-- Crafted fixture: Workday candidate apply flow (Create Account/Sign In). Structure and data-automation-id
+     values follow Workday's wd1/wd5 external career site markup (progressBar, applyFlow*Page,
+     formField-*, dateSection*-input, searchBox, add-button, bottom-navigation-next-button). -->
+<html><head><meta charset="utf-8"><title>Create Account/Sign In | Acme Careers</title></head><body>
+<div data-automation-id="header"><button data-automation-id="utilityButtonSignIn">Sign In</button></div>
+<div data-automation-id="applyFlowPage">
+<ol data-automation-id="progressBar">
+  <li data-automation-id="progressBarActiveStep"><label>current step 1 of 7</label><label>Create Account/Sign In</label></li>
+  <li data-automation-id="progressBarInactiveStep"><label>step 2 of 7</label><label>My Information</label></li>
+  <li data-automation-id="progressBarInactiveStep"><label>step 3 of 7</label><label>My Experience</label></li>
+  <li data-automation-id="progressBarInactiveStep"><label>step 4 of 7</label><label>Application Questions</label></li>
+  <li data-automation-id="progressBarInactiveStep"><label>step 5 of 7</label><label>Voluntary Disclosures</label></li>
+  <li data-automation-id="progressBarInactiveStep"><label>step 6 of 7</label><label>Self Identify</label></li>
+  <li data-automation-id="progressBarInactiveStep"><label>step 7 of 7</label><label>Review</label></li>
+</ol>
+
+<div data-automation-id="signInContent">
+  <h2>Create Account</h2>
+  <div data-automation-id="createAccountIntroMessage">Create an account to apply.</div>
+  <form data-automation-id="signInFormo">
+    <div data-automation-id="formField-email"><label for="input-4">Email Address<abbr title="required">*</abbr></label>
+      <input type="text" data-automation-id="email" id="input-4"></div>
+    <div data-automation-id="formField-password"><label for="input-5">Password<abbr title="required">*</abbr></label>
+      <input type="password" data-automation-id="password" id="input-5"></div>
+    <div data-automation-id="formField-verifyPassword"><label for="input-6">Verify New Password<abbr title="required">*</abbr></label>
+      <input type="password" data-automation-id="verifyPassword" id="input-6"></div>
+    <div data-automation-id="formField-"><input type="checkbox" data-automation-id="createAccountCheckbox" id="input-9">
+      <label for="input-9">Yes, I have read and consent to the terms and conditions</label></div>
+    <button type="submit" data-automation-id="createAccountSubmitButton">Create Account</button>
+    <button type="button" data-automation-id="signInLink">Sign In</button>
+    <input type="text" data-automation-id="beecatcher" tabindex="-1" style="position:absolute;left:-9999px">
+  </form>
+</div>
+</div></body></html>

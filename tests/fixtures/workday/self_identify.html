@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<!-- Crafted fixture: Workday candidate apply flow (Self Identify). Structure and data-automation-id
+     values follow Workday's wd1/wd5 external career site markup (progressBar, applyFlow*Page,
+     formField-*, dateSection*-input, searchBox, add-button, bottom-navigation-next-button). -->
+<html><head><meta charset="utf-8"><title>Self Identify | Acme Careers</title></head><body>
+<div data-automation-id="header"><button data-automation-id="utilityButtonSignIn">Sign In</button></div>
+<div data-automation-id="applyFlowPage">
+<button data-automation-id="backToJobPosting">Back to Job Posting</button>
+<h2 data-automation-id="jobTitleHeading">Software Engineer Intern (Summer 2027)</h2>
+<ol data-automation-id="progressBar">
+  <li data-automation-id="progressBarCompletedStep"><label>step 1 of 7</label><label>Create Account/Sign In</label></li>
+  <li data-automation-id="progressBarCompletedStep"><label>step 2 of 7</label><label>My Information</label></li>
+  <li data-automation-id="progressBarCompletedStep"><label>step 3 of 7</label><label>My Experience</label></li>
+  <li data-automation-id="progressBarCompletedStep"><label>step 4 of 7</label><label>Application Questions</label></li>
+  <li data-automation-id="progressBarCompletedStep"><label>step 5 of 7</label><label>Voluntary Disclosures</label></li>
+  <li data-automation-id="progressBarActiveStep"><label>current step 6 of 7</label><label>Self Identify</label></li>
+  <li data-automation-id="progressBarInactiveStep"><label>step 7 of 7</label><label>Review</label></li>
+</ol>
+<div data-automation-id="applyFlowSelfIdentifyPage">
+<h2>Self Identify</h2>
+<div data-automation-id="richText"><h3>Voluntary Self-Identification of Disability</h3><p>Form CC-305</p></div>
+<div data-automation-id="formField-name"><label for="selfIdentifiedDisabilityData--name">Name<abbr title="required">*</abbr></label><input type="text" id="selfIdentifiedDisabilityData--name" aria-required="true"></div>
+<div data-automation-id="formField-dateSignedOn"><label>Date<abbr title="required">*</abbr></label><div data-automation-id="dateInputWrapper"><input type="text" role="spinbutton" data-automation-id="dateSectionMonth-input" id="selfIdentifiedDisabilityData--dateSignedOn-dateSectionMonth-input" aria-label="Month"><input type="text" role="spinbutton" data-automation-id="dateSectionDay-input" id="selfIdentifiedDisabilityData--dateSignedOn-dateSectionDay-input" aria-label="Day"><input type="text" role="spinbutton" data-automation-id="dateSectionYear-input" id="selfIdentifiedDisabilityData--dateSignedOn-dateSectionYear-input" aria-label="Year"></div></div>
+<fieldset data-automation-id="formField-disabilityStatus"><legend>Do you have a disability (or previously had a disability)?<abbr title="required">*</abbr></legend><div><input type="checkbox" id="d1" name="disabilityStatus"><label for="d1">Yes, I have a disability (or previously had a disability)</label></div><div><input type="checkbox" id="d2" name="disabilityStatus"><label for="d2">No, I do not have a disability and have not had one in the past</label></div><div><input type="checkbox" id="d3" name="disabilityStatus"><label for="d3">I do not want to answer</label></div></fieldset>
+</div>
+<div data-automation-id="pageFooter">
+  <button data-automation-id="bottom-navigation-back-button" type="button">Back</button>
+  <button data-automation-id="bottom-navigation-next-button" type="button" data-next="review.html">Save and Continue</button>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<!-- Crafted fixture: Workday candidate apply flow (Job posting). Structure and data-automation-id
+     values follow Workday's wd1/wd5 external career site markup (progressBar, applyFlow*Page,
+     formField-*, dateSection*-input, searchBox, add-button, bottom-navigation-next-button). -->
+<html><head><meta charset="utf-8"><title>Job posting | Acme Careers</title></head><body>
+<div data-automation-id="header"><button data-automation-id="utilityButtonSignIn">Sign In</button></div>
+
+<div data-automation-id="jobPostingPage">
+  <h2 data-automation-id="jobPostingHeader">Software Engineer Intern (Summer 2027)</h2>
+  <a data-automation-id="adventureButton" href="#apply" role="button">Apply</a>
+  <div data-automation-id="job-posting-details"><div data-automation-id="locations">locations United States - Remote</div>
+  <div data-automation-id="requisitionId">job requisition id R-123456</div></div>
+  <div data-automation-id="jobPostingDescription">Join Acme as a software engineering intern...</div>
+</div>
+<div id="popup" data-automation-id="wd-popup-frame" aria-label="Start Your Application" style="display:none">
+  <button data-automation-id="closeButton" aria-label="Close"></button>
+  <div data-automation-id="wd-popup-content">Start Your Application
+    <a data-automation-id="autofillWithResume" href="autofill.html">Autofill with Resume</a>
+    <a data-automation-id="applyManually" href="signin.html">Apply Manually</a>
+    <a data-automation-id="useMyLastApplication" href="my_information.html">Use My Last Application</a>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!-- Crafted fixture: Workday candidate apply flow (My Information). Structure and data-automation-id
+     values follow Workday's wd1/wd5 external career site markup (progressBar, applyFlow*Page,
+     formField-*, dateSection*-input, searchBox, add-button, bottom-navigation-next-button). -->
+<html><head><meta charset="utf-8"><title>My Information | Acme Careers</title></head><body>
+<div data-automation-id="header"><button data-automation-id="utilityButtonSignIn">Sign In</button></div>
+<div data-automation-id="applyFlowPage">
+<button data-automation-id="backToJobPosting">Back to Job Posting</button>
+<h2 data-automation-id="jobTitleHeading">Software Engineer Intern (Summer 2027)</h2>
+<ol data-automation-id="progressBar">
+  <li data-automation-id="progressBarCompletedStep"><label>step 1 of 7</label><label>Create Account/Sign In</label></li>
+  <li data-automation-id="progressBarActiveStep"><label>current step 2 of 7</label><label>My Information</label></li>
+  <li data-automation-id="progressBarInactiveStep"><label>step 3 of 7</label><label>My Experience</label></li>
+  <li data-automation-id="progressBarInactiveStep"><label>step 4 of 7</label><label>Application Questions</label></li>
+  <li data-automation-id="progressBarInactiveStep"><label>step 5 of 7</label><label>Voluntary Disclosures</label></li>
+  <li data-automation-id="progressBarInactiveStep"><label>step 6 of 7</label><label>Self Identify</label></li>
+  <li data-automation-id="progressBarInactiveStep"><label>step 7 of 7</label><label>Review</label></li>
+</ol>
+<div data-automation-id="applyFlowMyInfoPage">
+<h2>My Information</h2>
+<div data-automation-id="formField-source"><label for="source--source">How Did You Hear About Us?<abbr title="required">*</abbr></label><div data-automation-id="multiselectInputContainer"><input type="text" id="source--source" data-automation-id="searchBox" placeholder="Search" data-options="LinkedIn|Indeed|Company Website|University Career Fair"></div></div>
+<fieldset data-automation-id="formField-candidateIsPreviousWorker"><legend>Have you previously worked for Acme as an employee or contractor?<abbr title="required">*</abbr></legend><div><input type="radio" id="candidateIsPreviousWorker-0" name="candidateIsPreviousWorker" value="Yes"><label for="candidateIsPreviousWorker-0">Yes</label></div><div><input type="radio" id="candidateIsPreviousWorker-1" name="candidateIsPreviousWorker" value="No"><label for="candidateIsPreviousWorker-1">No</label></div></fieldset>
+<div data-automation-id="formField-country"><label for="country--country">Country<abbr title="required">*</abbr></label><button type="button" id="country--country" aria-haspopup="listbox" data-options="Canada|India|United Kingdom|United States of America">Select One</button></div>
+<div data-automation-id="formField-legalName--firstName"><label for="name--legalName--firstName">First Name<abbr title="required">*</abbr></label><input type="text" id="name--legalName--firstName" aria-required="true"></div>
+<div data-automation-id="formField-legalName--middleName"><label for="name--legalName--middleName">Middle Name</label><input type="text" id="name--legalName--middleName" aria-required="false"></div>
+<div data-automation-id="formField-legalName--lastName"><label for="name--legalName--lastName">Last Name<abbr title="required">*</abbr></label><input type="text" id="name--legalName--lastName" aria-required="true"></div>
+<div data-automation-id="formField-addressLine1"><label for="address--addressLine1">Address Line 1<abbr title="required">*</abbr></label><input type="text" id="address--addressLine1" aria-required="true"></div>
+<div data-automation-id="formField-city"><label for="address--city">City<abbr title="required">*</abbr></label><input type="text" id="address--city" aria-required="true"></div>
+<div data-automation-id="formField-countryRegion"><label for="address--countryRegion">State<abbr title="required">*</abbr></label><button type="button" id="address--countryRegion" aria-haspopup="listbox" data-options="Alabama|Arizona|California|New York|Texas|Washington">Select One</button></div>
+<div data-automation-id="formField-postalCode"><label for="address--postalCode">Postal Code<abbr title="required">*</abbr></label><input type="text" id="address--postalCode" aria-required="true"></div>
+<div data-automation-id="formField-email"><label for="emailAddress--emailAddress">Email Address<abbr title="required">*</abbr></label><input type="text" id="emailAddress--emailAddress" aria-required="true"></div>
+<div data-automation-id="formField-phoneType"><label for="phoneNumber--phoneType">Phone Device Type<abbr title="required">*</abbr></label><button type="button" id="phoneNumber--phoneType" aria-haspopup="listbox" data-options="Home|Mobile|Work">Select One</button></div>
+<div data-automation-id="formField-countryPhoneCode"><label for="phoneNumber--countryPhoneCode">Country Phone Code<abbr title="required">*</abbr></label><div data-automation-id="multiselectInputContainer"><input type="text" id="phoneNumber--countryPhoneCode" data-automation-id="searchBox" placeholder="Search" data-options="United States of America (+1)"></div><div data-automation-id="selectedItem">United States of America (+1)</div></div>
+<div data-automation-id="formField-phoneNumber"><label for="phoneNumber--phoneNumber">Phone Number<abbr title="required">*</abbr></label><input type="text" id="phoneNumber--phoneNumber" aria-required="true"></div>
+<div data-automation-id="formField-extension"><label for="phoneNumber--extension">Phone Extension</label><input type="text" id="phoneNumber--extension" aria-required="false"></div>
+</div>
+<div data-automation-id="pageFooter">
+  <button data-automation-id="bottom-navigation-back-button" type="button">Back</button>
+  <button data-automation-id="bottom-navigation-next-button" type="button" data-next="my_experience.html">Save and Continue</button>
+</div>
+</div>
+</body></html>

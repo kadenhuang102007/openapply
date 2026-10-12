@@ -14,15 +14,25 @@ Step by step:
    the value and pick the first suggestion ONLY if its text clearly matches;
    otherwise we clear it and leave it for you. Long-answer boxes are matched to the
    drafted answers from `openapply tailor` by word overlap with the question.
-5. NEVER filled: selects, radios, and checkboxes; anything about work
-   authorization, sponsorship, visas, citizenship, gender, race, ethnicity,
-   veteran or disability status; passwords. These are logged as "left for you".
+5. Choice fields (selects, radio groups, checkboxes, dropdowns) are filled ONLY
+   from your saved answers in config/answers.yaml (see answers.py): the
+   option whose text best matches your saved answer is picked, and anything
+   uncertain is left for you. Work authorization, sponsorship, and EEO /
+   self-ID questions are filled from saved answers only when your profile says
+   `use_saved_answers: true`. Text fields about those topics, and passwords,
+   are never filled.
 6. Print and save a log of what was filled and what wasn't, then STOP. The
-   browser stays open until you press Enter in the terminal. You review every
-   field and click Submit yourself. The only click anywhere in this module is
-   on a dropdown option, through `_safe_click_option`, which refuses buttons,
-   links, inputs, and anything labelled submit/apply/next/continue. We never
-   press Enter (that can submit a form implicitly).
+   browser stays open until you press Enter in the terminal (or for
+   --wait-seconds, or until you close the window when there's no terminal; see
+   session.py). While it waits, it notes the choices you make so
+   `openapply apply` can offer to save them as new saved answers. You review
+   every field and click Submit yourself. The only click anywhere in this
+   module is on a dropdown option, through `_safe_click_option`, which refuses
+   buttons, links, inputs, and anything labelled submit/apply/next/continue.
+   Radio buttons and checkboxes are set with Playwright's check(), never a
+   button click. We never press Enter (that can submit a form implicitly).
+7. Opt-in auto-submit lives in autosubmit.py, reached only through the
+   `on_ready` hook, and only when `auto_submit: true` and every guardrail passes.
 """
 
 from __future__ import annotations
@@ -34,14 +44,8 @@ from pathlib import Path
 
 from ..config import GENERATED_DIR
 from ..models import Job
-
-# Labels we must never fill automatically.
-SENSITIVE = re.compile(
-    r"authori[sz]|sponsor|\bvisa|citizen|immigration|gender|\bsex\b|pronoun|\brace\b|ethnic|hispanic|latin[oax]|"
-    r"veteran|disab|accommodat|criminal|conviction|salary expectation|ssn|social security|date of birth|"
-    r"birth|\bage\b|password|religio|sexual orientation|lgbt|transgender|eeo|demographic",
-    re.I,
-)
+from .answers import SENSITIVE, SavedAnswers, allowed, choose_many, choose_option, is_yes, why_not
+from .session import LABEL_JS, Waiter, merge_capture
 
 # label regex -> profile key. Order matters: first match wins.
 FIELD_RULES: list[tuple[str, str]] = [
@@ -61,8 +65,7 @@ FIELD_RULES: list[tuple[str, str]] = [
     (r"current location|^location\b|^city\b|where are you (currently )?(located|based)", "location"),
 ]
 
-_COLLECT_JS = r"""
-() => {
+_COLLECT_JS = "() => {" + LABEL_JS + r"""
   const out = [];
   const els = Array.from(document.querySelectorAll('input, textarea, select'));
   let idx = 0;
@@ -105,6 +108,11 @@ _COLLECT_JS = r"""
       required: el.required || el.getAttribute('aria-required') === 'true' || /\*\s*$/.test(label || ''),
       value: (type === 'file') ? '' : (el.value || ''),
       role: el.getAttribute('role') || '',
+      question: (type === 'radio' || type === 'checkbox' || el.tagName === 'SELECT' || el.getAttribute('role') === 'combobox')
+        ? OA_question(el) : '',
+      option: (type === 'radio' || type === 'checkbox') ? OA_ownLabel(el) : '',
+      options: el.tagName === 'SELECT' ? Array.from(el.options).map(o => o.text.trim()) : [],
+      checked: !!el.checked,
     });
   }
   return out;
@@ -186,12 +194,26 @@ class FillReport:
     filled: list[FieldLog] = field(default_factory=list)
     not_filled: list[FieldLog] = field(default_factory=list)
     error: str = ""
+    ats: str = ""
+    stopped_at: str = ""      # Workday: the step openapply stopped on (review, signin, ...)
+    steps: dict[str, dict[str, list[FieldLog]]] = field(default_factory=dict)  # Workday: per-step logs
+    # Choices seen on the page while you worked (question -> value). Used to offer
+    # new saved answers; deliberately NOT written to fill_log.json.
+    captured: dict[str, dict] = field(default_factory=dict)
+
+    def add(self, log: FieldLog, step: str = "") -> None:
+        (self.filled if log.action != "skipped" else self.not_filled).append(log)
+        if step:
+            bucket = self.steps.setdefault(step, {"filled": [], "left": []})
+            bucket["filled" if log.action != "skipped" else "left"].append(log)
 
     def save(self) -> Path:
         out = GENERATED_DIR / self.job_id
         out.mkdir(parents=True, exist_ok=True)
         path = out / "fill_log.json"
-        path.write_text(json.dumps(asdict(self), indent=2), encoding="utf-8")
+        data = asdict(self)
+        data.pop("captured", None)
+        path.write_text(json.dumps(data, indent=2), encoding="utf-8")
         return path
 
 
@@ -250,6 +272,73 @@ def match_answer(label: str, answers: dict[str, str], cover_letter: str | None) 
     return best if best_score >= 0.5 else None
 
 
+def _group_key(f: dict) -> tuple:
+    """Radios group by name; checkboxes by their shared question (Greenhouse names each box separately)."""
+    if f["type"] == "radio":
+        return ("radio", f["name"] or f["question"])
+    return ("checkbox", f["question"] or f["name"])
+
+
+def _fill_choice(page, f: dict, group: list[dict], saved: SavedAnswers, profile: dict, company: str,
+                 log: FieldLog) -> None:
+    """Answer one choice question (select / radio group / checkbox / combobox) from saved answers."""
+    question = f["question"] or f["label"]
+    log.label = question
+    match = saved.lookup(question, company)
+    if not allowed(match, profile):
+        log.detail = "choice field: " + why_not(match)
+        return
+    loc = page.locator(f'[data-openapply="{f["key"]}"]')
+    if f["tag"] == "select":
+        pick = choose_option(match.answer, f["options"]) if isinstance(match.answer, str) else None
+        if pick:
+            loc.select_option(label=pick)
+            log.action, log.detail = "filled", f"saved answer `{match.key}` -> {pick!r}"
+        else:
+            log.detail = f"choice field: no option clearly matched saved answer {match.answer!r}"
+    elif f["type"] == "radio":
+        pick = choose_option(match.answer, [g["option"] for g in group]) if isinstance(match.answer, str) else None
+        if pick:
+            g = next(g for g in group if g["option"] == pick)
+            page.locator(f'[data-openapply="{g["key"]}"]').check()
+            log.action, log.detail = "filled", f"saved answer `{match.key}` -> {pick!r}"
+        else:
+            log.detail = f"choice field: no option clearly matched saved answer {match.answer!r}"
+    elif f["type"] == "checkbox":
+        if len(group) == 1:
+            if is_yes(match.answer):
+                loc.check()
+                log.action, log.detail = "filled", f"saved answer `{match.key}` -> checked"
+            else:
+                log.detail = f"checkbox left unchecked (saved answer {match.answer!r})"
+        else:
+            picks = choose_many(match.answer, [g["option"] for g in group])
+            for g in group:
+                if g["option"] in picks:
+                    page.locator(f'[data-openapply="{g["key"]}"]').check()
+            if picks:
+                log.action, log.detail = "filled", f"saved answer `{match.key}` -> {picks}"
+            else:
+                log.detail = f"choice field: no option clearly matched saved answer {match.answer!r}"
+    elif f["role"] == "combobox" and isinstance(match.answer, str):
+        loc.fill("")
+        loc.press_sequentially(match.answer, delay=25)
+        page.wait_for_timeout(1500)
+        listbox = loc.get_attribute("aria-controls")
+        scope = f"#{listbox} " if listbox else ".select__menu "
+        options = page.locator(f'{scope}[role="option"], {scope}.select__option')
+        texts = [options.nth(i).inner_text().strip() for i in range(min(options.count(), 40))]
+        pick = choose_option(match.answer, texts)
+        if pick:
+            _safe_click_option(options.nth(texts.index(pick)))
+            log.action, log.detail = "filled", f"saved answer `{match.key}` -> {pick!r}"
+        else:
+            loc.fill("")
+            log.detail = f"dropdown: no option clearly matched saved answer {match.answer!r}"
+    else:
+        log.detail = "choice field: left for you"
+
+
 def fill_application(
     job: Job,
     profile: dict,
@@ -259,12 +348,18 @@ def fill_application(
     close_after: bool = False,
     headless: bool = False,
     wait_ms: int = 4000,
+    saved: SavedAnswers | None = None,
+    wait_seconds: int | None = None,
+    on_ready=None,
 ) -> FillReport:
+    """Fill the form. `on_ready(page, report) -> bool` runs with the page still open (auto-submit
+    guardrails live there); returning True means it submitted, so there's nothing to hand off."""
     from playwright.sync_api import sync_playwright
 
     answers = answers or {}
+    saved = saved or SavedAnswers()
     values = profile_values(profile)
-    report = FillReport(job.id, job.url)
+    report = FillReport(job.id, job.url, ats=job.ats)
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=headless)
         page = browser.new_page()
@@ -273,6 +368,11 @@ def fill_application(
             page.wait_for_timeout(wait_ms)  # let React-based forms render
             report.captcha_present = bool(page.evaluate(_CAPTCHA_JS))
             fields = page.evaluate(_COLLECT_JS)
+            groups: dict[tuple, list[dict]] = {}
+            for f in fields:
+                if f["type"] in ("radio", "checkbox"):
+                    groups.setdefault(_group_key(f), []).append(f)
+            done_groups: set[tuple] = set()
             resume_done = False
             for f in fields:
                 loc = page.locator(f'[data-openapply="{f["key"]}"]')
@@ -295,8 +395,21 @@ def fill_application(
                         log.action, log.detail = "filled", f"picked dropdown option {picked!r}"
                     else:
                         log.detail = f"dropdown: no option clearly matched {value!r}; left for you"
-                elif f["tag"] == "select" or kind in ("radio", "checkbox") or f["role"] == "combobox":
-                    log.detail = "choice field: left for you"
+                elif kind in ("radio", "checkbox"):
+                    gk = _group_key(f)
+                    if gk in done_groups:
+                        continue
+                    done_groups.add(gk)
+                    group = groups.get(gk, [f])
+                    if any(g["checked"] for g in group):
+                        log.label, log.detail = f["question"] or label, "already had a value"
+                    else:
+                        _fill_choice(page, f, group, saved, profile, job.company, log)
+                elif f["tag"] == "select" or f["role"] == "combobox":
+                    if f["tag"] == "select" and f["value"]:  # placeholder options have value=""
+                        log.detail = "already had a value"
+                    else:
+                        _fill_choice(page, f, [f], saved, profile, job.company, log)
                 elif kind == "password":
                     log.detail = "password: never filled"
                 elif SENSITIVE.search(label):
@@ -325,32 +438,50 @@ def fill_application(
                             log.action, log.detail = "filled", f"drafted answer: {hit[0][:60]}"
                         else:
                             log.detail = "unrecognized field"
-                (report.filled if log.action != "skipped" else report.not_filled).append(log)
+                report.add(log)
         except Exception as e:
             report.error = f"{type(e).__name__}: {e}"
         report.save()
-        if close_after:
+        done = False
+        if on_ready is not None:
+            try:
+                done = bool(on_ready(page, report))
+            except Exception as e:
+                report.error = report.error or f"auto-submit: {type(e).__name__}: {e}"
+        if close_after or done:
             browser.close()
             return report
-        _print_report(report)
+        print_report(report)
         print("\n>>> Review every field in the browser window and click Submit YOURSELF.")
-        print(">>> openapply will not submit. Press Enter here when you're done to close the browser.")
+        waiter = Waiter(wait_seconds, on_tick=lambda pg: merge_capture(report.captured, pg))
+        merge_capture(report.captured, page)
+        waiter.hand_off(page)
         try:
-            input()
-        except EOFError:
+            browser.close()
+        except Exception:
             pass
-        browser.close()
     return report
 
 
-def _print_report(report: FillReport) -> None:
+def print_report(report: FillReport) -> None:
     print(f"\nFilled {len(report.filled)} field(s); left {len(report.not_filled)} for you.")
     if report.captcha_present:
         print("CAPTCHA detected: openapply did not touch it. Complete it yourself if prompted.")
-    for f in report.filled:
-        print(f"  [filled] {f.label[:70]}  <- {f.detail}")
-    for f in report.not_filled:
-        req = " (REQUIRED)" if f.required else ""
-        print(f"  [yours]  {f.label[:70]}{req}  - {f.detail}")
+    if report.steps:
+        for step, logs in report.steps.items():
+            print(f"\n[{step}] filled {len(logs['filled'])}, left {len(logs['left'])}")
+            for f in logs["filled"]:
+                print(f"  [filled] {f.label[:70]}  <- {f.detail}")
+            for f in logs["left"]:
+                req = " (REQUIRED)" if f.required else ""
+                print(f"  [yours]  {f.label[:70]}{req}  - {f.detail}")
+    else:
+        for f in report.filled:
+            print(f"  [filled] {f.label[:70]}  <- {f.detail}")
+        for f in report.not_filled:
+            req = " (REQUIRED)" if f.required else ""
+            print(f"  [yours]  {f.label[:70]}{req}  - {f.detail}")
+    if report.stopped_at:
+        print(f"Stopped at: {report.stopped_at}")
     if report.error:
         print(f"Error: {report.error}")

@@ -15,6 +15,47 @@ degree: B.S.
 majors: [Data Science]
 graduation: May 2028
 
+# Mailing address for Workday's "My Information" step. Blank fields are left for you.
+address:
+  line1: ""
+  line2: ""
+  city: City
+  state: ST              # two-letter code or full name
+  postal_code: ""
+  country: United States
+phone_type: Mobile       # Workday's "Phone Device Type"
+# Workday's "How did you hear about us?" is left alone unless you set this (e.g. LinkedIn).
+how_did_you_hear: ""
+
+# Structured education and work history, typed into Workday's repeating sections.
+# Dates: "Month YYYY" (or "YYYY"); end: Present = "I currently work here".
+education:
+  - school: Your University
+    degree: B.S.
+    field_of_study: Data Science
+    start: August 2025
+    end: May 2028
+experience:
+  - company: Example Corp
+    title: Software Engineering Intern
+    location: ""         # blank if you don't want to give one
+    start: June 2026
+    end: August 2026     # or Present
+    description: Built an internal dashboard in Python and SQL used by the support team.
+
+# Saved answers (config/answers.yaml) for work authorization, sponsorship and EEO /
+# self-identification questions are only auto-filled when this is true.
+use_saved_answers: false
+
+# Auto-submit (off by default). When true, `openapply apply <id> --submit`, `openapply add`
+# and `openapply autopilot` submit ONLY if every guardrail passes (all required fields filled,
+# no CAPTCHA, no [YOUR WORDS placeholders, fabrication check passed, established company and
+# score >= auto_submit_min_score, under the daily limit, not applied before, Workday on Review
+# with no errors). Otherwise they stop and add the job to `openapply todo`.
+auto_submit: false
+auto_submit_min_score: 60
+auto_submit_daily_limit: 10
+
 # Phone number for `openapply daily` iMessage alerts.
 alert_phone: "+15555550100"
 alerts:
@@ -28,12 +69,13 @@ alerts:
 established_only: false
 
 # Fill these in yourself. openapply uses needs_sponsorship_now_or_future only to
-# filter out "no sponsorship" postings; it NEVER answers these on a form.
+# filter out "no sponsorship" postings. Answers typed into forms come from
+# config/answers.yaml, and only with use_saved_answers: true.
 work_authorization:
   authorized_to_work_in_us: ""          # yes / no
   needs_sponsorship_now_or_future: ""   # yes / no
 
-# Demographic / EEO answers are intentionally not stored. Answer them yourself on each form.
+# Demographic / EEO answers are never stored here. Optional saved answers live in config/answers.yaml.
 
 # Resume variants. `families` decides which resume goes with which role family.
 resumes:

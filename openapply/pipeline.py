@@ -26,7 +26,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 
 from .config import load_filters, load_profile
-from .discovery.run import discover_all, enrich_descriptions
+from .discovery.run import API_ATS, discover_all, enrich_descriptions
 from .filter import NOT_ESTABLISHED, apply_filters, load_tiers
 from .http import PoliteClient
 from .match import llm as llm_mod
@@ -108,7 +108,7 @@ def discover_and_filter(tracker: Tracker, kind: str = "discover", enrich_limit: 
         stats.established = stats.kept_any_company - tier_counts.get("not established", 0)
         stats.drop_reasons, stats.families, stats.flags = dict(reasons), dict(fams), dict(flags)
 
-        todo = [j for j in kept if not j.has_description and j.ats != "other"]
+        todo = [j for j in kept if not j.has_description and j.ats in API_ATS]
         if todo and enrich_limit:
             progress(f"Fetching full descriptions for {min(len(todo), enrich_limit)} kept jobs from public ATS APIs...")
             stats.enriched = enrich_descriptions(client, todo, limit=enrich_limit)

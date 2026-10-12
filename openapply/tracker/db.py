@@ -8,6 +8,9 @@ Tables
           knows what's NEW since last time.
 - events: every status change you make (new -> shortlisted -> filled ->
           submitted -> interview -> offer / rejected), with a timestamp.
+- todo:   the "action required" queue: jobs where `openapply add` / `autopilot`
+          stopped and needs you (sign in, CAPTCHA, a question with no saved
+          answer, ...), with the reason. Marking a job submitted clears it.
 
 Statuses: new, shortlisted, filled, submitted, interview, rejected, offer.
 
@@ -72,6 +75,12 @@ CREATE TABLE IF NOT EXISTS events (
   status TEXT NOT NULL,
   at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS todo (
+  job_id TEXT PRIMARY KEY,
+  reason TEXT NOT NULL,
+  at TEXT NOT NULL,
+  resolved_at TEXT
+);
 """
 
 
@@ -80,6 +89,13 @@ def role_key(company: str, title: str, location: str) -> tuple[str, str]:
     loc_words = set(re.findall(r"[a-z]+", location.lower()))
     words = [w for w in re.findall(r"[a-z0-9]+", title.lower()) if w not in loc_words]
     return company.lower().strip(), " ".join(words)
+
+
+def norm_url(url: str) -> str:
+    """Compare links without query strings, fragments, case, or a trailing slash."""
+    u = (url or "").strip().split("#")[0].split("?")[0].rstrip("/").lower()
+    u = re.sub(r"/[a-z]{2}-[a-z]{2}(?=/)", "", u)  # Workday language prefix, e.g. /en-US/
+    return re.sub(r"^https?://(www\.)?", "", u)
 
 
 def now() -> str:
@@ -208,7 +224,49 @@ class Tracker:
         extra = ", interviewed=1" if status in ("interview", "offer") else ""
         self.conn.execute(f"UPDATE jobs SET status=?{extra} WHERE id=?", (status, job_id))
         self.conn.execute("INSERT INTO events (job_id, status, at) VALUES (?,?,?)", (job_id, status, now()))
+        if status in ("submitted", "interview", "rejected", "offer"):
+            self.conn.execute("UPDATE todo SET resolved_at=? WHERE job_id=? AND resolved_at IS NULL", (now(), job_id))
         self.conn.commit()
+
+    def latest_run_id(self) -> int | None:
+        return self.conn.execute("SELECT MAX(last_seen_run_id) FROM jobs").fetchone()[0]
+
+    def find_existing(self, job: Job) -> sqlite3.Row | None:
+        """The stored row for this posting: same id, same ATS job id, or same link."""
+        row = self.conn.execute("SELECT * FROM jobs WHERE id=?", (job.id,)).fetchone()
+        if row is None and job.ats != "other" and job.ats_job_id:
+            row = self.conn.execute(
+                "SELECT * FROM jobs WHERE json_extract(data,'$.ats_job_id')=? AND json_extract(data,'$.ats')=?",
+                (job.ats_job_id, job.ats)).fetchone()
+        if row is None:
+            want = norm_url(job.url)
+            row = next((r for r in self.conn.execute("SELECT * FROM jobs") if norm_url(r["url"]) == want), None)
+        return row
+
+    def already_submitted(self, url: str, job_id: str = "") -> sqlite3.Row | None:
+        """A job you already applied to with the same link (or the same id)."""
+        want = norm_url(url)
+        for r in self.by_status(["submitted", "interview", "rejected", "offer"]):
+            if r["id"] == job_id or norm_url(r["url"]) == want:
+                return r
+        return None
+
+    # ---- action-required queue ------------------------------------------
+    def add_todo(self, job_id: str, reason: str) -> None:
+        self.conn.execute(
+            "INSERT INTO todo (job_id, reason, at, resolved_at) VALUES (?,?,?,NULL) "
+            "ON CONFLICT(job_id) DO UPDATE SET reason=excluded.reason, at=excluded.at, resolved_at=NULL",
+            (job_id, reason, now()))
+        self.conn.commit()
+
+    def resolve_todo(self, job_id: str) -> None:
+        self.conn.execute("UPDATE todo SET resolved_at=? WHERE job_id=? AND resolved_at IS NULL", (now(), job_id))
+        self.conn.commit()
+
+    def todos(self) -> list[sqlite3.Row]:
+        return self.conn.execute(
+            "SELECT t.job_id, t.reason, t.at, j.company, j.title, j.url, j.status FROM todo t "
+            "LEFT JOIN jobs j ON j.id = t.job_id WHERE t.resolved_at IS NULL ORDER BY t.at").fetchall()
 
     def by_status(self, statuses: list[str]) -> list[sqlite3.Row]:
         q = ",".join("?" * len(statuses))

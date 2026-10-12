@@ -70,7 +70,9 @@ def test_parse_ats_url_variants():
     assert parse_ats_url("https://careers.example.com/jobs?gh_jid=123").ats == "greenhouse"
     r = parse_ats_url("https://jobs.ashbyhq.com/harvey/06d64648-b84b-48ae-94a2-d9c06dfdcb5d/application?embed=true")
     assert (r.ats, r.board) == ("ashby", "harvey")
-    assert parse_ats_url("https://amd.wd1.myworkdayjobs.com/x") is None
+    assert parse_ats_url("https://amd.wd1.myworkdayjobs.com/x") is None  # not a job link
+    wd = parse_ats_url("https://amgen.wd1.myworkdayjobs.com/en-US/careers/job/United-States---Remote/Software-Engineer-Intern_R-255719")
+    assert (wd.ats, wd.board, wd.job_id) == ("workday", "amgen/careers", "amgen:R-255719")
 
 
 def test_dedupe_merges_api_and_community(fixture_json):

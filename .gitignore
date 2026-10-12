@@ -6,6 +6,7 @@
 
 # Personal data (examples only are committed)
 config/profile.yaml
+config/answers.yaml
 resumes/*
 !resumes/README.md
 generated/

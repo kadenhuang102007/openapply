@@ -1,0 +1,31 @@
+# Saved answers for dropdown / yes-no questions. Copy to config/answers.yaml (gitignored) and fill in.
+# openapply picks the option whose text best matches your answer; if nothing matches clearly,
+# the question is left for you. It NEVER submits anything because of these.
+#
+# Work authorization, sponsorship, and the EEO / self-ID answers below are only used when
+# config/profile.yaml says `use_saved_answers: true`. Leave any answer blank to always answer it yourself.
+
+topics:
+  country: ""                 # e.g. United States
+  degree: ""                  # e.g. Bachelor's
+  major: ""                   # e.g. Data Science
+  graduation_date: ""         # e.g. May 2028
+  completed_internship: ""    # Yes / No
+  previously_worked_here: ""  # "Have you worked for <company> before?" (usually No)
+  willing_to_relocate: ""     # Yes / No
+  sms_opt_in: ""              # Yes / No
+  privacy_ack: ""             # Yes = tick "I acknowledge / I agree" boxes (blank = you tick them)
+
+  # Sensitive: only used with use_saved_answers: true
+  authorized_to_work_us: ""   # Yes / No
+  require_sponsorship: ""     # "now or in the future"; Yes / No
+  gender: ""
+  transgender: ""
+  hispanic_latinx: ""
+  race: ""
+  veteran: ""                 # e.g. I am not a protected veteran
+  disability: ""              # e.g. No, I do not have a disability
+
+# Questions you answered by hand. `openapply apply` offers to add them here after you finish
+# (or adds them with --learn). Key = the question, normalized; <company> stands for the company name.
+learned: {}

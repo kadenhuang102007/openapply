@@ -2,9 +2,11 @@
 
 An open-source, human-in-the-loop internship application assistant.
 
-openapply finds internships, filters them to the ones you'd actually apply to, ranks them against your resume, drafts honest application text, and pre-fills the application form.
+openapply finds internships, filters them to the ones you'd actually apply to, ranks them against your resume, drafts honest application text, and pre-fills the application form on Greenhouse, Lever, Ashby, and Workday.
 
 Then it **stops**. You review every field and click Submit yourself.
+
+(There's an opt-in [auto-submit](#auto-submit-opt-in) mode for people who want it. It's off unless you turn it on, and it only submits when every guardrail passes.)
 
 Built for the Summer 2027 recruiting season (PM, SWE, Data Science, ML), runs locally, MIT licensed.
 
@@ -12,13 +14,15 @@ Built for the Summer 2027 recruiting season (PM, SWE, Data Science, ML), runs lo
 
 ## The rules it never breaks
 
-- **Never clicks Submit.** The form-filler types into fields and attaches your resume. The only click in the code is on a dropdown suggestion (School, City), behind a guard that refuses buttons, links, and anything labelled submit/apply/next. It never presses Enter, because Enter can submit a form.
+- **Never clicks Submit on its own.** The form-filler types into fields and attaches your resume. On Greenhouse/Lever/Ashby the only click is on a dropdown suggestion, behind a guard that refuses buttons, links, and anything labelled submit/apply/next. On Workday it has to click Apply, Add, dropdowns, and "Save and Continue", through a guard that refuses anything labelled submit, sign in, create account, or delete, and it stops at the Review step. The one exception is [auto-submit](#auto-submit-opt-in), which you have to turn on yourself.
+
+- **Never presses Enter in a form.** Enter can submit a form. The single exception is inside Workday's own search boxes (School, Field of Study), which only search on Enter and aren't part of a submittable form.
 
 - **Never touches CAPTCHAs or bot detection.** If a CAPTCHA is present it's logged, and you handle it.
 
-- **Never stores passwords.** There is no field for one.
+- **Never creates accounts, never stores passwords.** There is no field for one. On Workday you sign in or create the account yourself; openapply waits.
 
-- **Never answers work authorization, sponsorship, visa, or demographic questions.** Those are always left for you.
+- **Never guesses work authorization, sponsorship, or demographic answers.** It only uses answers you saved yourself in `config/answers.yaml`, and only when your profile says `use_saved_answers: true`. Free-text questions on those topics are always left for you.
 
 - **Never invents experience.** Drafts only reuse your resume. A checker flags any number or name that doesn't trace back to your resume, profile, or the posting.
 
@@ -112,6 +116,89 @@ sqlite3 data/openapply.db "SELECT company, COUNT(*) FROM jobs WHERE filter_reaso
 
 ---
 
+## Workday
+
+About 1,000 of the kept community-list roles live on Workday (`*.myworkdayjobs.com`). `openapply apply <id>` works on them too.
+
+What happens:
+
+1. openapply opens Chromium with a **saved browser profile** in `data/browser-profile/` (gitignored). Your Workday logins live there.
+
+2. It opens the posting, clicks **Apply**, and picks **Apply Manually** ("Autofill with Resume" only if that's the only choice).
+
+3. If Workday shows **Create Account / Sign In**, openapply prints a message and waits. You sign in or create the account yourself in that window. It never types into the email or password boxes and never clicks Sign In or Create Account. Because the profile is saved, this is **once per company**.
+
+4. It walks the wizard, recognizing each step by Workday's stable `data-automation-id` attributes and the progress bar's step title:
+
+   - **My Information:** name, email, phone (digits), phone type, address, country, state. "How did you hear about us?" is left alone unless you set `how_did_you_hear` in your profile.
+   - **My Experience:** uploads your resume PDF, then clicks **Add** once per entry and fills Work Experience (from the profile's `experience:` list: title, company, location, dates, "I currently work here", description), Education (school, degree, field of study, years), Websites, and LinkedIn.
+   - **Application Questions, Voluntary Disclosures, Self Identify:** only [saved answers](#saved-answers). Anything still empty is listed, and openapply waits for you to fill it and press Enter.
+
+5. Between steps it clicks **Save and Continue**. If Workday shows errors and stays put, it waits for you to fix them.
+
+6. At **Review** it stops. It never clicks Submit (unless auto-submit is on and every guardrail passes). A per-step log of filled vs. left fields is printed and saved to `generated/<id>/fill_log.json`.
+
+Add a structured history to `config/profile.yaml` for step 4:
+
+```yaml
+address: {line1: "", city: Berkeley, state: CA, postal_code: "", country: United States}
+education:
+  - {school: "University of California, Berkeley", degree: B.S., field_of_study: Data Science, start: August 2025, end: May 2028}
+experience:
+  - company: Example Corp
+    title: Software Engineering Intern
+    location: ""
+    start: June 2026
+    end: Present          # ticks "I currently work here"
+    description: Built an internal dashboard in Python and SQL.
+```
+
+**Live check (October 11, 2026):** on a real Amgen posting, openapply clicked Apply and Apply Manually, detected the Create Account / Sign In step, reported `Stopped at: signin`, and closed, all in about 7 seconds. It typed nothing. The wizard steps after sign-in are tested against saved HTML fixtures built from Workday's markup (see Tests); they haven't been run against a signed-in account yet.
+
+---
+
+## Saved answers
+
+Most forms ask the same dropdown and yes/no questions: country, degree, graduation date, "have you worked here before?", sponsorship, EEO. Save your answers once:
+
+```bash
+cp config/answers.yaml.example config/answers.yaml   # gitignored; then fill in what you want auto-answered
+```
+
+- **Topics** are questions openapply already recognizes: country, degree, major, graduation date, completed an internship, previously worked at the company, willing to relocate, SMS opt-in, privacy acknowledgement, work authorization, sponsorship, gender, transgender, Hispanic/Latinx, race, veteran, and disability.
+
+- **Matching is conservative.** The question label is matched to a topic (or a learned question), then the dropdown or radio option that best matches your answer is picked: exact text, then yes/no by the first word, then "all your words are in the option". If two options fit equally, or nothing fits clearly, the field is left for you.
+
+- **Sensitive answers are opt-in.** Work authorization, sponsorship, and EEO / self-ID answers are only filled when `config/profile.yaml` says `use_saved_answers: true`. The example ships with `false` and empty answers.
+
+- **It learns.** While the browser is open, openapply notes the choices you make. When you're done, `openapply apply` lists any answers that aren't saved yet and asks `Save them? [y/N]`. Pass `--learn` to save without asking. Learned questions are stored with the company name replaced by `<company>`, so "Have you worked for Amgen before?" also answers the same question at PIMCO.
+
+This works on Greenhouse, Lever, Ashby, and Workday.
+
+---
+
+## Auto-submit (opt-in)
+
+Off by default. To use it, set `auto_submit: true` in `config/profile.yaml` **and** run a command that asks for it: `openapply apply <id> --submit`, `openapply add <url>`, or `openapply autopilot`.
+
+openapply submits only if **every** guardrail passes:
+
+- Every required field has a value (from your profile or saved answers).
+- No CAPTCHA or bot check on the page. openapply never solves or bypasses one.
+- Nothing typed into the form still contains a `[YOUR WORDS` placeholder, and the fabrication check for the drafts says PASS.
+- The company is on the established-company list (for a link you pasted with `openapply add`, this only warns), and the match score is at least `auto_submit_min_score` (default 60).
+- Fewer than `auto_submit_daily_limit` (default 10) auto-submissions today.
+- You haven't already applied to the same link.
+- On Workday: it's on the Review step with no validation errors.
+
+If anything fails, nothing is submitted. You get the reason, and the job goes on the `openapply todo` list.
+
+When it does submit, it saves `generated/<id>/receipt.json` (time, link, resume, every field and value, the confirmation text) plus before/after screenshots, marks the job submitted, and refreshes the CSV and Google Sheet export.
+
+In practice, many forms have a required acknowledgement checkbox or an open-ended question, so they'll land on the todo list for you to finish. That's by design.
+
+---
+
 ## openapply vs. Tsenta
 
 The Tsenta column reflects Tsenta's public positioning as a hosted AI application agent, not hands-on testing. Check tsenta.com for its current features.
@@ -123,8 +210,12 @@ The Tsenta column reflects Tsenta's public positioning as a hosted AI applicatio
 | Ranks against your resume, with reasons | Yes: matched/missing skills, optional Claude score and 2-sentence reason | Yes |
 | Tailored cover letter / answers | Yes, extractive by default, Claude optional, with a fabrication check | Yes |
 | Fills Greenhouse / Lever / Ashby forms | Yes (tested live on all three) | Yes |
-| Workday, iCIMS, Oracle, SmartRecruiters, etc. | **No.** These jobs are found and ranked, but you apply by hand | Broader coverage |
-| Submits for you | **Never, by design** | Yes, that's the product |
+| Workday | Yes: walks the wizard to Review; you sign in once per company yourself | Yes |
+| iCIMS, Oracle, SmartRecruiters, etc. | **No.** These jobs are found and ranked, but you apply by hand | Broader coverage |
+| Remembers your answers to repeat questions | Yes, `config/answers.yaml`, learns from what you pick; sensitive ones opt-in | Yes |
+| Add any posting link you find | Yes, `openapply add <url>` (Greenhouse/Lever/Ashby/Workday) | Yes |
+| "Action required" queue | Yes, `openapply todo` | Yes |
+| Submits for you | **Off by default.** Opt-in `auto_submit`, only when every guardrail passes, with a receipt | Yes, that's the product |
 | Reads your email inbox for interview/rejection updates | **Not yet.** You run `openapply mark` | Yes |
 | Phone alerts for new roles | iMessage via macOS Messages (Mac only) | App/email |
 | Where your data lives | Your laptop (SQLite, gitignored profile) | Their servers |
@@ -205,7 +296,7 @@ cp .env.example .env                                 # optional keys
 
 In `config/profile.yaml`, point `resumes:` at your resume files. Each variant needs a `.tex` or `.txt` file for matching, and a PDF to upload. The `families` list decides which resume goes to which role family. You can also drop files into `resumes/`.
 
-Fill in the `work_authorization` fields yourself. They're only used to filter out "no sponsorship" postings if you need sponsorship. They are never typed into a form.
+Fill in the `work_authorization` fields yourself. They're only used to filter out "no sponsorship" postings if you need sponsorship. Answers typed into forms come from `config/answers.yaml` instead (see [Saved answers](#saved-answers)).
 
 ## Daily use
 
@@ -216,13 +307,30 @@ openapply rank --top 25            # best matches; add --family pm|swe|ds|ml, --
 openapply rank --include-startups  # ignore established_only for this command (or --established-only)
 openapply show gh-7850795003       # details, flags, matched/missing skills
 openapply tailor gh-7850795003     # drafts + fabrication check -> generated/<id>/
-openapply apply gh-7850795003      # opens Chromium, fills, STOPS; you submit
+openapply apply gh-7850795003      # opens Chromium, fills, STOPS; you submit (Workday too)
+openapply apply x-8893184f01 --wait-seconds 300   # no terminal (scripts): keep the browser open 5 min
+openapply apply gh-7850795003 --learn             # save the dropdown answers you picked, no prompt
 openapply mark gh-7850795003 submitted   # also: interview, rejected, offer
+openapply add <url> [<url> ...]    # a posting you found: ingest -> score -> tailor -> fill -> text you
+openapply autopilot --top 10       # same for your top 10 (auto-submits only if auto_submit: true)
+openapply todo                     # jobs that stopped and need you, with the reason
 openapply export --to both         # CSV + Google Sheet
 openapply daily --dry-run          # what tomorrow's 8 AM text would say
 ```
 
-Job ids are short. `gh-` means Greenhouse, `lv-` Lever, `ab-` Ashby, and `x-` other sites. Other sites are ranked, but you apply by hand.
+Job ids are short. `gh-` means Greenhouse, `lv-` Lever, `ab-` Ashby, and `x-` other sites, including Workday. Workday jobs can be pre-filled; the rest are ranked, but you apply by hand.
+
+When the terminal isn't interactive (stdin isn't a TTY, e.g. a script), `openapply apply` no longer closes the browser instantly: it keeps it open until you close the window, or for `--wait-seconds N`.
+
+### Adding a posting you found
+
+```bash
+openapply add https://job-boards.greenhouse.io/acme/jobs/123 https://acme.wd1.myworkdayjobs.com/careers/job/X_R-1
+```
+
+Each link, in order: fetch the posting from the ATS's public API, score it and pick the resume (PM roles get your PM resume, SWE/Data/ML get the SWE resume), draft text, fill the form, then (only with `auto_submit: true` and every guardrail passing) submit. You get an iMessage either way: "Applied: Company – Role ✅" or "Needs you: Company – Role — reason". `--dry-run` does everything except submit and prints the text instead of sending it. Links you paste skip the established-company filter (it warns instead).
+
+With auto-submit off, the browser stays open for you on each link, just like `openapply apply`.
 
 ### Claude features (optional)
 
@@ -280,7 +388,7 @@ openapply has nothing hard-coded to one person.
 
 5. **Skills vocabulary:** `openapply/match/skills.py` is the list the matcher uses for explanations. Add your field's tools.
 
-Personal files are all gitignored: `config/profile.yaml`, `.env`, `data/*.db`, `generated/`, `logs/`, and `resumes/`. Only the `*.example` files are committed.
+Personal files are all gitignored: `config/profile.yaml`, `config/answers.yaml`, `.env`, `data/` (the database and the Workday browser profile), `generated/`, `logs/`, and `resumes/`. Only the `*.example` files are committed.
 
 ## Tests
 
@@ -304,15 +412,23 @@ The tests cover:
 
 - Alert length and the form-field safety rules.
 
+- Workday, against saved HTML fixtures for every step (`tests/fixtures/workday/`: job page, sign-in, My Information, My Experience, Application Questions, Voluntary Disclosures, Self Identify, Review). They're built from Workday's real `data-automation-id` markup; a small script stands in for its dropdowns, Add buttons, and navigation. Covered: step detection, field detection, filling, the sign-in gate, the sensitive-answer opt-in, and that Review is never clicked.
+
+- Saved answers: question matching, option choice, and learning without losing your comments.
+
+- Auto-submit: one test per guardrail, receipts, dry runs, `add` / `todo`, and the non-terminal hand-off.
+
+Browser tests run headless against local fixtures with every other request blocked, so nothing touches the internet. One live smoke test (the Amgen sign-in gate) is skipped unless you ask for it: `.venv/bin/pytest -m live`.
+
 ## Known limits
 
 - **Matching is lexical.** "Product management" can show as missing for a PM role if your resume never uses those words, even when the experience is relevant. `--llm` helps here.
 
 - **Scores are relative to the day.** The similarity half of the score is a percentile within the day's batch, so compare scores within one run, not across runs.
 
-- **Workday and other non-Greenhouse/Lever/Ashby postings** have no fetched description and can't be pre-filled.
+- **Workday** postings found by discovery are still scored on title and tags only (no description is fetched during discovery; `openapply add` does fetch one). The wizard after sign-in is tested on fixtures, not yet on a signed-in account, and tenants customize their questions, so expect some fields left for you. Other sites (iCIMS, Oracle, ...) can't be pre-filled.
 
-- **Dropdowns:** only School and City are auto-picked, and only when the suggestion clearly matches. Degree, dates, and every yes/no question are left for you.
+- **Dropdowns:** School and City are auto-picked when the suggestion clearly matches; everything else comes only from saved answers, and only when an option clearly matches.
 
 - **The tier list is a judgment call.** It's hand-curated and will miss some established companies (or include some you wouldn't). Unlisted companies are excluded in established-only mode, so check `--include-startups` now and then.
 

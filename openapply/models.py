@@ -17,13 +17,16 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-ATS = Literal["greenhouse", "lever", "ashby", "other"]
+ATS = Literal["greenhouse", "lever", "ashby", "workday", "other"]
 
 _PREFIX = {"greenhouse": "gh", "lever": "lv", "ashby": "ab"}
 
 
 def make_job_id(ats: str, ats_job_id: str | None, url: str) -> str:
-    """Build the short CLI id. Known ATS -> prefix + native id; otherwise a URL hash."""
+    """Build the short CLI id. Known ATS -> prefix + native id; otherwise (Workday too) a URL hash.
+
+    Workday keeps the `x-` URL-hash id it always had, so jobs already in your
+    database keep their ids."""
     if ats in _PREFIX and ats_job_id:
         native = ats_job_id if ats == "greenhouse" else ats_job_id.split("-")[0]
         return f"{_PREFIX[ats]}-{native}"
