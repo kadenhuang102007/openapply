@@ -1,0 +1,520 @@
+# Established companies, grouped by tier. Used by the `established_only` filter
+# (profile setting) and `openapply rank --established-only / --include-startups`.
+#
+# How matching works: names are compared after normalizing both sides, so you
+# don't need every spelling. Normalizing means: lowercase, accents removed,
+# "&" read as "and", anything in (parentheses) also tried without it, a leading
+# "The" dropped, trailing legal words dropped (Inc, LLC, Ltd, Corp, Corporation,
+# Co, Company, PLC, Holdings, Group, LP, LLP, SA, AG, NV, SE, GmbH), then all
+# spaces and punctuation removed. So "JPMorgan Chase & Co.", "JPMorganChase"
+# and "JPMorgan Chase" are the same key. Matching is exact on that key (no fuzzy guessing), so "Meta"
+# never matches "Metadata". Add an alias when a company goes by a different name.
+#
+# Format: each entry is either a plain name, or `Name: [alias, alias, ...]`.
+# The same key may not appear under two entries (the loader checks).
+#
+# The bar: big tech, well-known public tech, elite late-stage private tech,
+# top quant/trading firms, major banks / asset managers / fintech, and large
+# (roughly Fortune 500) companies that hire tech/product/data interns.
+# Seed through Series B startups are deliberately absent. When in doubt, a
+# company was left out; add it yourself if you disagree.
+
+tiers:
+  big_tech:
+    label: big tech
+    companies:
+      - Google: [Alphabet, Google LLC, Google DeepMind, DeepMind, YouTube, Google Cloud]
+      - Meta: [Meta Platforms, Facebook, Instagram, WhatsApp, Meta Reality Labs]
+      - Apple
+      - Amazon: [Amazon.com, Amazon Web Services, AWS, Amazon Robotics, Amazon Development Center]
+      - Microsoft: [Microsoft Research]
+      - Netflix
+      - NVIDIA
+      - Tesla: [Tesla Motors]
+      - TikTok: [TikTok USDS, TikTok US Data Security]
+      - ByteDance
+      - Oracle: [Oracle Health, Oracle America]
+      - Salesforce: [Salesforce.com, Slack, Tableau, MuleSoft]
+      - Adobe
+      - IBM: [International Business Machines, IBM Research]
+
+  top_tech:
+    label: top tech
+    companies:
+      # Public tech
+      - LinkedIn
+      - GitHub
+      - Waymo
+      - Zoox
+      - Uber: [Uber Technologies]
+      - Lyft
+      - Airbnb
+      - DoorDash
+      - Instacart: [Maplebear]
+      - Pinterest
+      - Snap: [Snapchat]
+      - Reddit
+      - Spotify
+      - Shopify
+      - Block: [Square, Cash App, Block Inc]
+      - PayPal: [Venmo, PayPal Holdings]
+      - Robinhood: [Robinhood Markets]
+      - Coinbase
+      - Roblox
+      - Unity: [Unity Technologies]
+      - Electronic Arts: [EA]
+      - Activision Blizzard: [Activision, Blizzard Entertainment]
+      - Take-Two Interactive: [Take Two Interactive, Rockstar Games]
+      - Epic Games
+      - Riot Games
+      - Datadog
+      - Snowflake
+      - MongoDB
+      - Cloudflare
+      - CrowdStrike
+      - Palo Alto Networks
+      - Fortinet
+      - Zscaler
+      - Okta
+      - Twilio
+      - Atlassian
+      - Workday
+      - ServiceNow
+      - Intuit: [TurboTax, Credit Karma, Mailchimp]
+      - Autodesk
+      - Dropbox
+      - Box
+      - DocuSign
+      - Zoom: [Zoom Video Communications, Zoom Communications]
+      - HubSpot
+      - Splunk
+      - Palantir: [Palantir Technologies]
+      - Cisco: [Cisco Systems, Cisco Meraki]
+      - Qualcomm
+      - AMD: [Advanced Micro Devices]
+      - Broadcom
+      - Micron Technology: [Micron]
+      - Texas Instruments
+      - Applied Materials
+      - KLA: [KLA Tencor]
+      - Lam Research
+      - Marvell: [Marvell Technology, Marvell Semiconductor]
+      - Analog Devices
+      - Arm: [Arm Holdings]
+      - Synopsys
+      - Cadence Design Systems: [Cadence]
+      - Intel
+      - Dell Technologies: [Dell]
+      - HP: [HP Inc, Hewlett Packard, HP IQ]
+      - Hewlett Packard Enterprise: [HPE]
+      - Arista Networks
+      - Astera Labs
+      - Juniper Networks
+      - Pure Storage
+      - NetApp
+      - VMware
+      - Akamai: [Akamai Technologies]
+      - F5: [F5 Networks]
+      - eBay
+      - Etsy
+      - Wayfair
+      - Expedia Group: [Expedia]
+      - Booking Holdings: [Booking.com, Priceline]
+      - Zillow
+      - Duolingo
+      - Toast
+      - Samsara
+      - Confluent
+      - Elastic
+      - GitLab
+      - Rubrik
+      - Nutanix
+      - Veeva Systems: [Veeva]
+      - Procore: [Procore Technologies]
+      - Affirm
+      - SoFi: [SoFi Technologies]
+      - Chime: [Chime Financial]
+      - Klaviyo
+      - Figma
+      - DraftKings
+      - Rivian: [Rivian Automotive]
+      - Aurora Innovation
+      - CoreWeave
+      - Rocket Lab: [Rocket Lab USA]
+      - Samsung: [Samsung Electronics, Samsung Research America, Samsung Semiconductor]
+      - Tencent
+      - Alibaba
+      - Sony: [Sony Interactive Entertainment, PlayStation]
+      - Intuitive Surgical
+      - Squarespace
+      - Asana
+      - Qualtrics
+      - Epic Systems
+      - SAS: [SAS Institute]
+      - Bloomberg: [Bloomberg LP, Bloomberg L.P.]
+      # Elite late-stage private tech
+      - Stripe
+      - Databricks
+      - OpenAI
+      - Anthropic
+      - xAI
+      - SpaceX: [Space Exploration Technologies, Starlink]
+      - Blue Origin
+      - Anduril: [Anduril Industries]
+      - Ramp
+      - Scale AI
+      - Plaid
+      - Notion: [Notion Labs]
+      - Canva
+      - Brex
+      - Rippling
+      - Gusto
+      - Deel
+      - Discord
+      - Grammarly
+      - Airtable
+      - Faire
+      - Navan
+      - Perplexity: [Perplexity AI]
+      - Anysphere: [Cursor]
+      - Applied Intuition
+      - Glean
+      - Harvey
+      - Verkada
+      - Sentry
+      - Wiz
+
+  quant:
+    label: quant
+    companies:
+      - Jane Street: [Jane Street Capital]
+      - Citadel: [Citadel LLC]
+      - Citadel Securities
+      - Two Sigma: [Two Sigma Investments, Two Sigma Securities]
+      - D. E. Shaw: [DE Shaw, D.E. Shaw, The D. E. Shaw Group, D. E. Shaw & Co.]
+      - Hudson River Trading: [HRT]
+      - Jump Trading
+      - Five Rings: [Five Rings Capital, Five Rings LLC]
+      - IMC Trading: [IMC]
+      - Optiver
+      - Susquehanna International Group: [SIG, Susquehanna]
+      - Tower Research Capital: [Tower Research]
+      - Virtu Financial: [Virtu]
+      - DRW: [DRW Trading]
+      - Akuna Capital: [Akuna]
+      - Chicago Trading Company: [CTC]
+      - Old Mission Capital: [Old Mission]
+      - Belvedere Trading
+      - Flow Traders
+      - XTX Markets
+      - Millennium: [Millennium Management]
+      - Point72: [Point72 Asset Management, Cubist Systematic Strategies, Cubist]
+      - AQR: [AQR Capital Management]
+      - Bridgewater Associates: [Bridgewater]
+      - WorldQuant
+      - Squarepoint Capital: [Squarepoint]
+      - Radix Trading: [Radix]
+      - Headlands Technologies: [Headlands]
+      - Voloridge: [Voloridge Investment Management]
+      - PDT Partners
+      - Schonfeld: [Schonfeld Strategic Advisors]
+      - Balyasny Asset Management: [Balyasny]
+      - Brevan Howard
+      - The Voleon Group: [Voleon]
+      - Peak6: [PEAK6 Investments]
+      - Wolverine Trading
+      - Renaissance Technologies
+
+  finance:
+    label: finance
+    companies:
+      - JPMorgan Chase: [JPMorgan, J.P. Morgan, JP Morgan, JPMorgan Chase Bank, Chase, J.P. Morgan Chase]
+      - Goldman Sachs
+      - Morgan Stanley
+      - Bank of America: [BofA, Bank of America Merrill Lynch, BofA Securities, Merrill Lynch, Merrill]
+      - Citi: [Citigroup, Citibank]
+      - Wells Fargo
+      - Capital One: [Capital One Financial]
+      - American Express: [Amex]
+      - Visa
+      - Mastercard
+      - Discover Financial Services: [Discover Financial]
+      - BlackRock
+      - Vanguard: [The Vanguard Group]
+      - Fidelity Investments: [Fidelity, FMR]
+      - Charles Schwab: [Schwab]
+      - State Street
+      - BNY: [BNY Mellon, Bank of New York Mellon, The Bank of New York Mellon]
+      - Northern Trust
+      - T. Rowe Price
+      - Invesco
+      - Franklin Templeton
+      - PIMCO
+      - AllianceBernstein
+      - Neuberger Berman
+      - Dimensional Fund Advisors
+      - MFS: [MFS Investment Management]
+      - American Century Investments
+      - Nuveen
+      - TIAA
+      - Blackstone
+      - KKR
+      - Apollo Global Management
+      - Carlyle: [The Carlyle Group]
+      - Arcesium
+      - CME Group
+      - Intercontinental Exchange: [ICE, NYSE]
+      - Nasdaq
+      - Cboe Global Markets: [Cboe]
+      - DTCC: [Depository Trust & Clearing Corporation]
+      - Tradeweb
+      - MarketAxess
+      - S&P Global
+      - Moody's
+      - MSCI
+      - FactSet
+      - Morningstar
+      - Fannie Mae
+      - Freddie Mac
+      - Federal Reserve: [Federal Reserve System, Federal Reserve Board, Federal Reserve Bank of New York, Federal Reserve Bank of San Francisco, Federal Reserve Bank of Chicago]
+      - U.S. Bank: [US Bank, U.S. Bancorp, US Bancorp]
+      - PNC: [PNC Financial Services, PNC Bank]
+      - Truist
+      - TD Bank: [TD, TD Securities]
+      - Citizens Financial Group: [Citizens Bank]
+      - Fifth Third Bank: [Fifth Third]
+      - KeyBank: [KeyCorp]
+      - Huntington National Bank: [Huntington Bancshares]
+      - M&T Bank
+      - Regions Financial: [Regions Bank]
+      - Ally: [Ally Financial]
+      - Synchrony: [Synchrony Financial]
+      - First Citizens BancShares: [First Citizens Bank]
+      - Navy Federal Credit Union: [Navy Federal]
+      - Royal Bank of Canada: [RBC, RBC Capital Markets]
+      - CIBC
+      - BMO: [BMO Financial Group, Bank of Montreal]
+      - Barclays
+      - HSBC
+      - Deutsche Bank
+      - UBS
+      - BNP Paribas
+      - Santander
+      - Mizuho
+      - MUFG
+      - Nomura
+      - Lazard
+      - Evercore
+      - Jefferies
+      - Raymond James
+      - Edward Jones
+      - LPL Financial
+      - Ameriprise Financial: [Ameriprise]
+      - Fiserv
+      - FIS: [Fidelity National Information Services]
+      - Global Payments
+      - Broadridge: [Broadridge Financial Solutions]
+      - SS&C: [SS&C Technologies]
+      - Circle: [Circle Internet Financial, Circle Internet Group]
+      - GM Financial
+      - State Farm
+      - Allstate
+      - Progressive
+      - Travelers
+      - The Hartford: [Hartford Financial Services]
+      - Liberty Mutual
+      - Nationwide
+      - USAA
+      - Prudential Financial: [Prudential]
+      - MetLife
+      - Northwestern Mutual
+      - New York Life
+      - MassMutual
+      - Guardian Life
+      - Principal Financial Group
+      - Aflac
+      - Chubb
+      - AIG: [American International Group]
+      - Pacific Life
+      - Lincoln Financial
+      - Athene
+      - Manulife Financial: [Manulife, John Hancock]
+      - CNA Insurance: [CNA Financial, CNA]
+      - Assurant
+      - Arthur J. Gallagher: [Gallagher, Arthur J. Gallagher & Co.]
+      - Equifax
+      - Experian
+      - TransUnion
+
+  enterprise:
+    label: enterprise
+    companies:
+      # Retail and consumer
+      - Walmart: [Walmart Global Tech, Sam's Club]
+      - Target
+      - The Home Depot: [Home Depot]
+      - Lowe's
+      - Costco
+      - Kroger
+      - Best Buy
+      - Macy's
+      - Dick's Sporting Goods
+      - Nike
+      - Starbucks
+      - McDonald's
+      - Procter & Gamble: [P&G]
+      - PepsiCo
+      - Coca-Cola: [The Coca-Cola Company]
+      - Walgreens
+      - CVS Health: [CVS, Aetna]
+      - Sysco
+      - US Foods
+      - Genuine Parts Company: [NAPA]
+      - AutoZone
+      - W.W. Grainger: [Grainger]
+      - Copart
+      - Hilton: [Hilton Worldwide]
+      - Marriott: [Marriott International]
+      - Enterprise Holdings: [Enterprise Mobility]
+      - Avis Budget Group
+      - Koch Industries
+      # Health
+      - UnitedHealth Group: [UnitedHealth, Optum]
+      - Elevance Health
+      - Cigna: [The Cigna Group, Cigna Group, Evernorth]
+      - Humana
+      - Centene
+      - McKesson
+      - Cencora: [AmerisourceBergen]
+      - Cardinal Health
+      - Johnson & Johnson: [J&J, Johnson and Johnson Innovative Medicine, Johnson & Johnson MedTech]
+      - Pfizer
+      - Merck
+      - AbbVie
+      - Amgen
+      - Gilead Sciences: [Gilead]
+      - Eli Lilly: [Lilly]
+      - Bristol Myers Squibb: [Bristol-Myers Squibb, BMS]
+      - Abbott: [Abbott Laboratories]
+      - Medtronic
+      - Stryker
+      - Danaher
+      - Thermo Fisher Scientific: [Thermo Fisher]
+      - GE HealthCare: [GE Healthcare]
+      - Philips
+      - Boston Scientific
+      - Zimmer Biomet: [Zimmer Biomet Holdings]
+      - Labcorp: [LabCorp]
+      - Quest Diagnostics
+      - Universal Health Services
+      # Media and telecom
+      - Disney: [The Walt Disney Company, Walt Disney]
+      - Comcast: [NBCUniversal]
+      - Warner Bros. Discovery: [Warner Bros Discovery]
+      - Dow Jones
+      - News Corp
+      - The New York Times
+      - Verizon: [Verizon Communications]
+      - AT&T
+      - T-Mobile
+      - Charter Communications
+      - Cox: [Cox Enterprises, Cox Communications, Cox Automotive]
+      - DIRECTV
+      # Autos, aerospace, defense, industrials
+      - General Motors: [GM]
+      - Ford: [Ford Motor]
+      - Toyota: [Toyota North America, Toyota Research Institute]
+      - Honda: [American Honda Motor]
+      - Nissan: [Nissan North America, Nissan Global]
+      - Daimler Truck
+      - Boeing
+      - Airbus
+      - Lockheed Martin
+      - RTX: [Raytheon, Raytheon Technologies, Pratt & Whitney, Collins Aerospace]
+      - Northrop Grumman
+      - General Dynamics: [General Dynamics Information Technology, GDIT, General Dynamics Mission Systems, General Dynamics Electric Boat, Gulfstream]
+      - L3Harris: [L3Harris Technologies]
+      - Leidos
+      - Booz Allen Hamilton: [Booz Allen]
+      - CACI: [CACI International]
+      - SAIC: [Science Applications International]
+      - BAE Systems
+      - United Launch Alliance: [ULA]
+      - Honeywell
+      - GE Aerospace
+      - GE Vernova
+      - 3M
+      - Caterpillar
+      - John Deere: [Deere]
+      - Emerson Electric: [Emerson]
+      - Rockwell Automation
+      - Textron
+      - Oshkosh
+      - Illinois Tool Works: [ITW]
+      - Cummins
+      - Eaton
+      - Parker Hannifin
+      - Siemens
+      - Bosch: [Robert Bosch, Bosch Home Comfort]
+      - ABB
+      - Trane Technologies
+      - Carrier: [Carrier Global]
+      - Johnson Controls
+      - Otis: [Otis Elevator]
+      - Motorola Solutions: [Motorola]
+      - Garmin
+      - Trimble
+      - Teledyne: [Teledyne Technologies]
+      - Vertiv
+      - Corning
+      - Ciena
+      - Aptiv
+      - Jabil
+      - Western Digital
+      - Seagate
+      - GlobalFoundries
+      - NXP Semiconductors: [NXP]
+      - Monolithic Power Systems
+      - Qorvo
+      - Panasonic: [Panasonic Holdings]
+      - Ecolab
+      - Steel Dynamics
+      # Logistics, travel, energy
+      - UPS: [United Parcel Service]
+      - FedEx
+      - C.H. Robinson
+      - Delta Air Lines
+      - United Airlines
+      - American Airlines
+      - Southwest Airlines
+      - Union Pacific
+      - CSX
+      - BNSF: [BNSF Railway]
+      - Norfolk Southern
+      - ExxonMobil: [Exxon Mobil, Exxon]
+      - Chevron
+      - Duke Energy
+      - Southern Company
+      - NextEra Energy
+      - PG&E: [Pacific Gas and Electric]
+      - Exelon
+      - Constellation Energy
+      - Xcel Energy
+      - Edison International: [Southern California Edison]
+      - American Electric Power: [AEP]
+      - Entergy
+      - WEC Energy Group
+      # Software, data and services at scale
+      - Accenture
+      - Deloitte
+      - PwC: [PricewaterhouseCoopers]
+      - EY: [Ernst & Young]
+      - KPMG
+      - McKinsey & Company: [McKinsey]
+      - Boston Consulting Group: [BCG]
+      - Bain & Company
+      - ADP: [Automatic Data Processing]
+      - Tyler Technologies
+      - CoStar Group: [CoStar]
+      - Ansys
+      - PTC

@@ -3,14 +3,20 @@
 discover_and_filter()
   1. start a run in the tracker
   2. discovery.run.discover_all  -> unique jobs from every source
-  3. filter.apply_filters        -> keep / drop with a reason, families, flags
+  3. filter.apply_filters        -> keep / drop with a reason, families, flags,
+                                    and the company tier (big tech, quant, ...).
+                                    With `established_only: true` in your profile,
+                                    unknown companies drop as "not an established company".
   4. tracker.upsert_job for every job (dropped ones too, so you can audit why)
   5. enrich descriptions for kept jobs that lack one (public ATS APIs only),
      skipping jobs whose description we already stored in an earlier run
 
 rank()
-  6. score every kept job from the latest run against your resume variants
-  7. optionally rerank the top N with Claude (cached: a job is only sent once)
+  6. score every kept job from the latest run against your resume variants,
+     startups included, so switching --established-only / --include-startups
+     never needs a re-score; the company-tier note is appended to the explanation
+  7. optionally rerank the top N with Claude (cached: a job is only sent once),
+     within the view you asked for
 """
 
 from __future__ import annotations
@@ -21,7 +27,7 @@ from dataclasses import dataclass, field
 
 from .config import load_filters, load_profile
 from .discovery.run import discover_all, enrich_descriptions
-from .filter import apply_filters
+from .filter import NOT_ESTABLISHED, apply_filters, load_tiers
 from .http import PoliteClient
 from .match import llm as llm_mod
 from .match.resume import load_resumes
@@ -43,6 +49,15 @@ class PipelineStats:
     families: dict = field(default_factory=dict)
     flags: dict = field(default_factory=dict)
     enriched: int = 0
+    established_only: bool = False
+    kept_any_company: int = 0  # kept before the established-company check
+    established: int = 0  # of those, how many are established companies
+    tiers: dict = field(default_factory=dict)  # tier -> count among kept_any_company
+
+
+def established_only(profile: dict) -> bool:
+    """The profile switch `established_only: true` (default off)."""
+    return str(profile.get("established_only", False)).strip().lower() in ("true", "yes", "y", "1")
 
 
 def needs_sponsorship(profile: dict) -> bool:
@@ -63,10 +78,15 @@ def discover_and_filter(tracker: Tracker, kind: str = "discover", enrich_limit: 
 
         cfg, profile = load_filters(), load_profile()
         sponsor = needs_sponsorship(profile)
+        tiers, stats.established_only = load_tiers(), established_only(profile)
         kept: list[Job] = []
-        reasons, fams, flags = Counter(), Counter(), Counter()
+        reasons, fams, flags, tier_counts = Counter(), Counter(), Counter(), Counter()
         for job in jobs:
-            res = apply_filters(job, cfg, needs_sponsorship=sponsor)
+            res = apply_filters(job, cfg, needs_sponsorship=sponsor, tiers=tiers,
+                                established_only=stats.established_only)
+            if res.keep or res.reason == NOT_ESTABLISHED:
+                stats.kept_any_company += 1
+                tier_counts[res.tier.tier or "not established"] += 1
             # reuse a description stored in an earlier run
             if res.keep and not job.has_description:
                 row = tracker.get(job.id)
@@ -74,7 +94,8 @@ def discover_and_filter(tracker: Tracker, kind: str = "discover", enrich_limit: 
                     old = tracker.job(row)
                     if old.has_description:
                         job.description = old.description
-            tracker.upsert_job(job, stats.run_id, res.keep, res.reason, res.families, res.flags)
+            tracker.upsert_job(job, stats.run_id, res.keep, res.reason, res.families, res.flags,
+                               res.tier.tier, res.tier.note)
             if res.keep:
                 kept.append(job)
                 fams.update(res.families)
@@ -83,6 +104,8 @@ def discover_and_filter(tracker: Tracker, kind: str = "discover", enrich_limit: 
                 reasons[res.reason] += 1
         tracker.commit()
         stats.kept = len(kept)
+        stats.tiers = dict(tier_counts)
+        stats.established = stats.kept_any_company - tier_counts.get("not established", 0)
         stats.drop_reasons, stats.families, stats.flags = dict(reasons), dict(fams), dict(flags)
 
         todo = [j for j in kept if not j.has_description and j.ats != "other"]
@@ -99,23 +122,27 @@ def discover_and_filter(tracker: Tracker, kind: str = "discover", enrich_limit: 
     return stats
 
 
-def rank(tracker: Tracker, use_llm: bool = False, llm_top: int = 25, progress=print) -> list:
+def rank(tracker: Tracker, use_llm: bool = False, llm_top: int = 25, progress=print,
+         established: bool | None = None) -> list:
+    """Score all kept jobs; `established` only narrows which ones the Claude rerank looks at."""
     profile = load_profile()
     resumes = load_resumes(profile)
     if not resumes:
         raise RuntimeError("No resumes found. Configure `resumes:` in config/profile.yaml or add files to resumes/.")
-    rows = tracker.filtered()
+    rows = tracker.filtered(established_only=False)
     jobs = [tracker.job(r) for r in rows]
     families = {r["id"]: json.loads(r["families"]) for r in rows}
+    notes = {r["id"]: r["tier_note"] for r in rows}
     results = score_jobs(jobs, resumes, families)
     for m in results:
-        tracker.set_score(m.job_id, m.score, m.variant, m.explanation())
+        explanation = m.explanation() + (f" | {notes[m.job_id]}" if notes.get(m.job_id) else "")
+        tracker.set_score(m.job_id, m.score, m.variant, explanation)
     tracker.commit()
     if use_llm:
         if not llm_mod.available():
             progress("No ANTHROPIC_API_KEY found; skipping the Claude rerank (baseline scores kept).")
         else:
-            top = tracker.ranked(llm_top)
+            top = tracker.ranked(llm_top, established_only=established)
             for r in top:
                 if r["llm_score"] is not None:
                     continue

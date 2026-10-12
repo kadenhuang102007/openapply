@@ -10,6 +10,14 @@ Tables
           submitted -> interview -> offer / rejected), with a timestamp.
 
 Statuses: new, shortlisted, filled, submitted, interview, rejected, offer.
+
+Company tiers: each job also stores `company_tier` (big_tech, top_tech, quant,
+finance, enterprise, faang_plus, or NULL for "not established") and `tier_note`,
+the plain-English reason. Views take `established_only`:
+- None  -> exactly the jobs that passed the filter at discovery time
+- True  -> only established companies, even if discovery kept startups
+- False -> startups too, even if discovery dropped them as
+           "not an established company"
 """
 
 from __future__ import annotations
@@ -21,6 +29,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from ..config import DB_PATH
+from ..filter.tiers import NOT_ESTABLISHED
 from ..models import Job
 
 STATUSES = ["new", "shortlisted", "filled", "submitted", "interview", "rejected", "offer"]
@@ -54,7 +63,9 @@ CREATE TABLE IF NOT EXISTS jobs (
   first_run_id INTEGER,
   first_seen TEXT,
   last_seen TEXT,
-  last_seen_run_id INTEGER
+  last_seen_run_id INTEGER,
+  company_tier TEXT,
+  tier_note TEXT
 );
 CREATE TABLE IF NOT EXISTS events (
   job_id TEXT NOT NULL,
@@ -81,6 +92,15 @@ class Tracker:
         self.conn = sqlite3.connect(path)
         self.conn.row_factory = sqlite3.Row
         self.conn.executescript(SCHEMA)
+        self._migrate()
+
+    def _migrate(self) -> None:
+        """Add columns that older databases don't have yet."""
+        have = {r["name"] for r in self.conn.execute("PRAGMA table_info(jobs)")}
+        for col in ("company_tier", "tier_note"):
+            if col not in have:
+                self.conn.execute(f"ALTER TABLE jobs ADD COLUMN {col} TEXT")
+        self.conn.commit()
 
     # ---- runs -----------------------------------------------------------
     def start_run(self, kind: str) -> int:
@@ -96,12 +116,14 @@ class Tracker:
         return self.conn.execute("SELECT COUNT(*) FROM runs WHERE id < ?", (before_run_id,)).fetchone()[0]
 
     # ---- jobs -----------------------------------------------------------
-    def upsert_job(self, job: Job, run_id: int, passed: bool, reason: str, families: list[str], flags: list[str]) -> None:
+    def upsert_job(self, job: Job, run_id: int, passed: bool, reason: str, families: list[str], flags: list[str],
+                   tier: str | None = None, tier_note: str | None = None) -> None:
         ts = now()
         self.conn.execute(
             """INSERT INTO jobs (id, company, title, location, url, ats, data, passed_filter, filter_reason,
-                                 families, flags, first_run_id, first_seen, last_seen, last_seen_run_id)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                                 families, flags, first_run_id, first_seen, last_seen, last_seen_run_id,
+                                 company_tier, tier_note)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
                ON CONFLICT(id) DO UPDATE SET
                  company=excluded.company, title=excluded.title, location=excluded.location,
                  url=excluded.url, ats=excluded.ats,
@@ -110,9 +132,11 @@ class Tracker:
                            THEN excluded.data ELSE jobs.data END,
                  passed_filter=excluded.passed_filter, filter_reason=excluded.filter_reason,
                  families=excluded.families, flags=excluded.flags,
-                 last_seen=excluded.last_seen, last_seen_run_id=excluded.last_seen_run_id""",
+                 last_seen=excluded.last_seen, last_seen_run_id=excluded.last_seen_run_id,
+                 company_tier=excluded.company_tier, tier_note=excluded.tier_note""",
             (job.id, job.company, job.title, job.location, job.url, job.ats, job.model_dump_json(),
-             int(passed), reason, json.dumps(families), json.dumps(flags), run_id, ts, ts, run_id),
+             int(passed), reason, json.dumps(families), json.dumps(flags), run_id, ts, ts, run_id,
+             tier, tier_note),
         )
 
     def update_description(self, job: Job) -> None:
@@ -131,12 +155,20 @@ class Tracker:
     def job(self, row: sqlite3.Row) -> Job:
         return Job.model_validate_json(row["data"])
 
-    def filtered(self, run_id: int | None = None) -> list[sqlite3.Row]:
+    @staticmethod
+    def _passes(established_only: bool | None) -> str:
+        """SQL condition for "kept", honoring the established-only switch (see module docstring)."""
+        if established_only is None:
+            return "passed_filter=1"
+        either = f"(passed_filter=1 OR filter_reason='{NOT_ESTABLISHED}')"
+        return f"{either} AND company_tier IS NOT NULL" if established_only else either
+
+    def filtered(self, run_id: int | None = None, established_only: bool | None = None) -> list[sqlite3.Row]:
         """Jobs that pass the filter and were seen in the given run (default: latest run)."""
         if run_id is None:
             run_id = self.conn.execute("SELECT MAX(last_seen_run_id) FROM jobs").fetchone()[0]
         return self.conn.execute(
-            "SELECT * FROM jobs WHERE passed_filter=1 AND last_seen_run_id=?", (run_id,)
+            f"SELECT * FROM jobs WHERE {self._passes(established_only)} AND last_seen_run_id=?", (run_id,)
         ).fetchall()
 
     def set_score(self, job_id: str, score: int, variant: str, explanation: str) -> None:
@@ -147,9 +179,9 @@ class Tracker:
         self.conn.execute("UPDATE jobs SET llm_score=?, llm_reason=? WHERE id=?", (score, reason, job_id))
 
     def ranked(self, limit: int = 25, run_id: int | None = None, collapse: bool = True,
-               family: str | None = None) -> list[sqlite3.Row]:
+               family: str | None = None, established_only: bool | None = None) -> list[sqlite3.Row]:
         """Best first. With collapse=True, the same role posted once per city shows once."""
-        rows = self.filtered(run_id)
+        rows = self.filtered(run_id, established_only)
         if family:
             rows = [r for r in rows if family in json.loads(r["families"])]
         rows = sorted(rows,
@@ -164,9 +196,9 @@ class Tracker:
             rows = out
         return rows[:limit]
 
-    def new_in_run(self, run_id: int) -> list[sqlite3.Row]:
+    def new_in_run(self, run_id: int, established_only: bool | None = None) -> list[sqlite3.Row]:
         return self.conn.execute(
-            "SELECT * FROM jobs WHERE passed_filter=1 AND first_run_id=?", (run_id,)
+            f"SELECT * FROM jobs WHERE {self._passes(established_only)} AND first_run_id=?", (run_id,)
         ).fetchall()
 
     # ---- status ---------------------------------------------------------

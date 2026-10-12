@@ -20,6 +20,13 @@ alert_phone: "+15555550100"
 alerts:
   min_score: 0   # only alert on new jobs with a baseline score >= this
 
+# Only show and alert on internships at established companies (big tech, top
+# public / late-stage tech, quant firms, major finance, large enterprises), as
+# listed in config/company_tiers.yaml. Startups are kept in the database with
+# the reason "not an established company"; `openapply rank --include-startups`
+# shows them anyway, and `--established-only` works even when this is false.
+established_only: false
+
 # Fill these in yourself. openapply uses needs_sponsorship_now_or_future only to
 # filter out "no sponsorship" postings; it NEVER answers these on a form.
 work_authorization:

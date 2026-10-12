@@ -40,6 +40,7 @@ Built for the Summer 2027 recruiting season (PM, SWE, Data Science, ML), runs lo
   +----------------------------------------------------------------------------------------+
   |  filter/      internship?  role family (PM/SWE/DS/ML)?  excluded?  Summer 2027?  US?     |
   |               flags: no_sponsorship, us_citizenship, export_control, season_unconfirmed  |
+  |               company tier: big tech / top tech / quant / finance / enterprise / none   |
   +---------------------------------------+------------------------------------------------+
                                           |  enrich: fetch full descriptions from public ATS APIs
                                           v
@@ -60,6 +61,54 @@ Built for the Summer 2027 recruiting season (PM, SWE, Data Science, ML), runs lo
 ```
 
 Every module opens with a plain-English docstring that walks through what it does, step by step.
+
+---
+
+## Established companies only
+
+Community lists are heavy on seed and Series A/B startups. If you only want internships at established companies, turn on one setting in `config/profile.yaml`:
+
+```yaml
+established_only: true
+```
+
+Here's what happens then.
+
+- Every posting's company is looked up in `config/company_tiers.yaml`, a hand-curated list of about 470 companies in five tiers: **big tech** (Google, Meta, Apple, Amazon, Microsoft, NVIDIA, TikTok, ...), **top tech** (well-known public tech plus elite late-stage private companies like Stripe, Databricks, OpenAI, Anthropic, SpaceX, Anduril, Ramp), **quant** (Jane Street, Citadel, HRT, Jump, Five Rings, IMC, ...), **finance** (major banks, asset managers, exchanges, insurers, payment networks), and **enterprise** (roughly Fortune 500 companies that hire tech/product/data interns).
+
+- Companies not on the list are excluded. They stay in the database with the reason `not an established company`, so `openapply show <id>` tells you why.
+
+- `openapply rank` shows a **tier** column. `openapply daily` only texts you about established companies.
+
+- Two flags override the setting for one command: `openapply rank --include-startups` shows everyone, and `openapply rank --established-only` filters even when the setting is off. No re-discovery is needed either way.
+
+Two extra signals are recorded in each job's explanation:
+
+- **SimplifyJobs 🔥 (FAANG+).** SimplifyJobs marks some companies with a 🔥. openapply keeps that marker, and it counts as established on its own.
+
+- **Workday links (`myworkdayjobs.com`).** Startups rarely pay for Workday, so this is noted as a weak signal. It never makes a company established by itself.
+
+### Editing the tier list
+
+Open `config/company_tiers.yaml`. Each entry is either a plain name or `Name: [alias, alias]`:
+
+```yaml
+  finance:
+    label: finance
+    companies:
+      - JPMorgan Chase: [JPMorgan, J.P. Morgan, Chase]
+      - Two Sigma
+```
+
+You don't need every spelling. Both sides are normalized before comparing: case, accents, punctuation and spaces are ignored, "&" counts as "and", a leading "The" is dropped, and so are trailing legal words like Inc, LLC, Corp, Co, Holdings, Group. So "JPMorgan Chase & Co." and "JPMorganChase" already match `JPMorgan Chase`.
+
+Matching is exact after that, so "Meta" never matches "Metadata". If a company shows up under a different name (a subsidiary, an old name), add it as an alias.
+
+The loader refuses two entries that normalize to the same name, so a typo can't silently move a company between tiers. To see which companies were excluded in your last run:
+
+```bash
+sqlite3 data/openapply.db "SELECT company, COUNT(*) FROM jobs WHERE filter_reason='not an established company' GROUP BY company ORDER BY 2 DESC"
+```
 
 ---
 
@@ -122,6 +171,16 @@ These numbers come from running `openapply discover` and then `openapply rank` a
 | 9 | 81 | Sigma Computing | Software Engineer Intern (NYC), flagged no_sponsorship | SWE/Data | https://job-boards.greenhouse.io/sigmacomputing/jobs/8001295003 |
 | 10 | 81 | CSC Generation | Software Engineer, Legacy Apps & Modernization, Intern/Part Time (Houston) | SWE/Data | https://jobs.lever.co/cscgeneration-2/3a04b45f-a2eb-438a-a8ac-b07324223813/apply |
 
+**With `established_only: true`** (same day, re-run on the new filter): 765 of the 1,324 kept internships survive, from 204 companies (607 distinct roles once per-city copies collapse).
+
+- By tier: enterprise 419, top tech 148, finance 134, big tech 39, quant 25.
+
+- By family: SWE 435, Data Science 183, ML 131, PM 52.
+
+- Only 90 can be pre-filled (81 Greenhouse, 8 Ashby, 1 Lever). The other 675 are on Workday (462) and other sites, so you apply to those by hand.
+
+- The top established matches were Harvey, Klaviyo, Figma, Ramp, DoorDash, Verkada, Robinhood, and Glean for SWE/Data, and Datadog, Roblox, and Coinbase for PM.
+
 The top 10 are all SWE because the SWE/Data resume names many concrete tools that postings also name. Use `openapply rank --family pm` to see PM roles on their own. The best PM matches were ONE Finance Product Intern (65), OpusClip AI Product Management Intern (62), Datadog Product Management Intern (60), and Bedrock Robotics Product Intern (60).
 
 **Form-filler, live test, no submit:** On the Sigma Computing Greenhouse form, openapply filled 10 fields: name, preferred name, email, phone, City and School dropdowns, LinkedIn, resume PDF, and the cover letter box. It left 12 for the human: Country, Degree, graduation date, pronouns, the onsite question, the acknowledgment, H-1B, visa status, gender, Hispanic/Latino, and veteran status. A CAPTCHA was detected and not touched.
@@ -154,6 +213,7 @@ Fill in the `work_authorization` fields yourself. They're only used to filter ou
 source .venv/bin/activate
 openapply discover                 # fetch + filter + store (about 1-2 min)
 openapply rank --top 25            # best matches; add --family pm|swe|ds|ml, --llm, --shortlist
+openapply rank --include-startups  # ignore established_only for this command (or --established-only)
 openapply show gh-7850795003       # details, flags, matched/missing skills
 openapply tailor gh-7850795003     # drafts + fabrication check -> generated/<id>/
 openapply apply gh-7850795003      # opens Chromium, fills, STOPS; you submit
@@ -214,9 +274,11 @@ openapply has nothing hard-coded to one person.
 
 2. **Roles and season:** Edit `config/filters.yaml`. It holds the role-family regexes, title exclusions, season year and term, location rules, and the flag patterns.
 
-3. **You:** Fill in `config/profile.yaml` (gitignored) and your resumes.
+3. **Which companies count as established:** Edit `config/company_tiers.yaml` (see [Editing the tier list](#editing-the-tier-list)).
 
-4. **Skills vocabulary:** `openapply/match/skills.py` is the list the matcher uses for explanations. Add your field's tools.
+4. **You:** Fill in `config/profile.yaml` (gitignored) and your resumes.
+
+5. **Skills vocabulary:** `openapply/match/skills.py` is the list the matcher uses for explanations. Add your field's tools.
 
 Personal files are all gitignored: `config/profile.yaml`, `.env`, `data/*.db`, `generated/`, `logs/`, and `resumes/`. Only the `*.example` files are committed.
 
@@ -228,7 +290,9 @@ Personal files are all gitignored: `config/profile.yaml`, `.env`, `data/*.db`, `
 
 The tests cover:
 
-- Parsers, run against saved real payloads in `tests/fixtures/` (Greenhouse, Lever, Ashby, the SimplifyJobs README including ↳ and 🔒 rows, and the zshah101 CSV).
+- Parsers, run against saved real payloads in `tests/fixtures/` (Greenhouse, Lever, Ashby, the SimplifyJobs README including ↳, 🔒 and 🔥 rows, and the zshah101 CSV).
+
+- Company-tier matching (aliases like "JPMorgan Chase & Co." and "Alphabet Inc.", near-misses like "Metadata" and "Sigma Computing"), the 🔥 and Workday signals, and the established-only filter and views.
 
 - De-duplication and filter rules.
 
@@ -249,6 +313,8 @@ The tests cover:
 - **Workday and other non-Greenhouse/Lever/Ashby postings** have no fetched description and can't be pre-filled.
 
 - **Dropdowns:** only School and City are auto-picked, and only when the suggestion clearly matches. Degree, dates, and every yes/no question are left for you.
+
+- **The tier list is a judgment call.** It's hand-curated and will miss some established companies (or include some you wouldn't). Unlisted companies are excluded in established-only mode, so check `--include-startups` now and then.
 
 - **Upstream list errors pass through.** Community lists can contain errors. One example: a placeholder company name, which openapply replaces with the ATS board name when it can.
 

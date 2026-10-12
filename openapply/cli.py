@@ -2,6 +2,7 @@
 
     openapply discover                 fetch + filter + store (+ enrich descriptions)
     openapply rank --top 25 [--llm]    score kept jobs against your resumes
+                 [--established-only | --include-startups]   (default: profile's established_only)
     openapply show <job_id>            details, flags, and match explanation for one job
     openapply tailor <job_id> [--llm]  draft cover letter + answers, run the fabrication check
     openapply apply <job_id>           open the form, pre-fill it, STOP for you to submit
@@ -15,6 +16,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+from typing import Optional
 
 import typer
 from rich.console import Console
@@ -66,17 +68,32 @@ def _print_discovery(stats: pipeline.PipelineStats) -> None:
     console.print("Flags on kept jobs: " + ", ".join(f"{k}={v}" for k, v in sorted(stats.flags.items(), key=lambda x: -x[1])))
     top_drops = sorted(stats.drop_reasons.items(), key=lambda x: -x[1])[:6]
     console.print("Top drop reasons: " + ", ".join(f"{k} ({v})" for k, v in top_drops))
+    tiers = ", ".join(f"{_TIER_TAG.get(k, k)}={v}" for k, v in sorted(stats.tiers.items(), key=lambda x: -x[1]))
+    console.print(f"Established companies: {stats.established} of {stats.kept_any_company} kept ({tiers}).")
+    if stats.established_only:
+        console.print("established_only is on: the rest are stored with reason 'not an established company' "
+                      "(see them with `openapply rank --include-startups`).")
     console.print(f"Descriptions fetched for community-list jobs: {stats.enriched}")
+
+
+_TIER_TAG = {"big_tech": "big tech", "top_tech": "top tech", "quant": "quant", "finance": "finance",
+             "enterprise": "enterprise", "faang_plus": "FAANG+"}
+
+
+def _established_view(flag: bool | None, profile: dict) -> bool:
+    """The CLI flag wins; otherwise the profile's `established_only` setting."""
+    return pipeline.established_only(profile) if flag is None else flag
 
 
 def _print_ranked(rows) -> None:
     t = Table(title=f"Top {len(rows)} matches")
-    for c in ("#", "id", "score", "company", "role", "location", "resume", "flags"):
+    for c in ("#", "id", "score", "company", "tier", "role", "location", "resume", "flags"):
         t.add_column(c, overflow="fold")
     for i, r in enumerate(rows, 1):
         score = r["llm_score"] if r["llm_score"] is not None else r["score"]
         flags = ",".join(f for f in json.loads(r["flags"]) if f != "season_unconfirmed")
-        t.add_row(str(i), r["id"], str(score), r["company"], r["title"], (r["location"] or "")[:40],
+        tier = _TIER_TAG.get(r["company_tier"], "-") if r["company_tier"] else "-"
+        t.add_row(str(i), r["id"], str(score), r["company"], tier, r["title"], (r["location"] or "")[:40],
                   r["variant"] or "", flags)
     console.print(t)
 
@@ -93,12 +110,19 @@ def discover(enrich_limit: int = typer.Option(400, help="Max descriptions to fet
 def rank(top: int = typer.Option(25, help="How many to show."),
          llm: bool = typer.Option(False, "--llm", help="Rerank the top N with Claude (needs ANTHROPIC_API_KEY)."),
          family: str = typer.Option(None, help="Only one role family: pm | swe | ds | ml."),
-         shortlist: bool = typer.Option(False, help="Mark the shown jobs as 'shortlisted' (only if still 'new').")):
+         shortlist: bool = typer.Option(False, help="Mark the shown jobs as 'shortlisted' (only if still 'new')."),
+         established: Optional[bool] = typer.Option(
+             None, "--established-only/--include-startups",
+             help="Only established companies (config/company_tiers.yaml), or startups too. "
+                  "Default: `established_only` in your profile.")):
     """Score kept jobs against your resumes and show the best matches."""
     tracker = Tracker()
-    pipeline.rank(tracker, use_llm=llm, llm_top=top, progress=_say)
-    rows = tracker.ranked(top, family=family)
+    view = _established_view(established, load_profile())
+    pipeline.rank(tracker, use_llm=llm, llm_top=top, progress=_say, established=view)
+    rows = tracker.ranked(top, family=family, established_only=view)
     _print_ranked(rows)
+    if view:
+        console.print("[dim]Established companies only. Add --include-startups to see everyone.[/dim]")
     if shortlist:
         for r in rows:
             if r["status"] == "new":
@@ -115,6 +139,9 @@ def show(job_id: str):
     console.print(f"[bold]{job.company} - {job.title}[/bold]  ({r['id']})")
     console.print(f"Location: {job.location}\nLink: {job.url}\nATS: {job.ats}  Sources: {', '.join(job.sources)}")
     console.print(f"Status: {r['status']}  Families: {r['families']}  Flags: {r['flags']}")
+    if r["filter_reason"]:
+        console.print(f"Filter: {r['filter_reason']}")
+    console.print(f"Company: {r['tier_note'] or 'tier unknown (run `openapply discover`)'}")
     console.print(f"Score: {r['score']} (resume: {r['variant']})  {r['explanation'] or ''}")
     if r["llm_score"] is not None:
         console.print(f"Claude: {r['llm_score']} - {r['llm_reason']}")
@@ -226,12 +253,13 @@ def daily(dry_run: bool = typer.Option(False, "--dry-run", help="Print the alert
     from .notify import build_alert, send_imessage
 
     tracker, profile = Tracker(), load_profile()
+    view = pipeline.established_only(profile)
     stats = pipeline.discover_and_filter(tracker, "daily", enrich_limit, progress=_say)
-    pipeline.rank(tracker, use_llm=llm, progress=_say)
+    pipeline.rank(tracker, use_llm=llm, progress=_say, established=view)
     threshold = min_score if min_score is not None else int((profile.get("alerts") or {}).get("min_score", 0))
-    new_rows = [r for r in tracker.new_in_run(stats.run_id) if (r["score"] or 0) >= threshold]
+    new_rows = [r for r in tracker.new_in_run(stats.run_id, established_only=view) if (r["score"] or 0) >= threshold]
     new_ids = {r["id"] for r in new_rows}
-    fresh = [r for r in tracker.ranked(10_000) if r["id"] in new_ids]
+    fresh = [r for r in tracker.ranked(10_000, established_only=view) if r["id"] in new_ids]
     baseline = tracker.previous_run_count(stats.run_id) == 0
     top = [{"company": r["company"], "title": r["title"], "url": r["url"],
             "score": r["llm_score"] if r["llm_score"] is not None else r["score"]} for r in fresh[:5]]

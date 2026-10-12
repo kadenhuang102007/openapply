@@ -9,6 +9,11 @@ For each job we answer five questions, in this order:
 Jobs that pass get `flags` for language you should read before applying:
 no_sponsorship, us_citizenship, export_control, season_unconfirmed, ...
 Flags never drop a job unless your profile says you need sponsorship.
+6. Is it an established company?    (only when `established_only` is on; see tiers.py)
+   Every job gets its company tier recorded either way, so `openapply rank
+   --include-startups` / `--established-only` can switch views without
+   re-running discovery. A job dropped here keeps its families and flags, and
+   its reason is "not an established company".
 """
 
 from __future__ import annotations
@@ -17,6 +22,7 @@ import re
 from dataclasses import dataclass, field
 
 from ..models import Job
+from .tiers import FAANG_PLUS, NOT_ESTABLISHED, CompanyTiers, TierMatch
 
 US_STATES = {
     "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS",
@@ -91,6 +97,7 @@ class FilterResult:
     reason: str = ""
     families: list[str] = field(default_factory=list)
     flags: list[str] = field(default_factory=list)
+    tier: TierMatch | None = None  # set when a tier list was passed in
 
 
 def _season_check(job: Job, cfg: dict) -> tuple[bool, str, bool]:
@@ -112,7 +119,19 @@ def _season_check(job: Job, cfg: dict) -> tuple[bool, str, bool]:
     return True, "", False
 
 
-def apply_filters(job: Job, cfg: dict, needs_sponsorship: bool = False) -> FilterResult:
+def apply_filters(job: Job, cfg: dict, needs_sponsorship: bool = False,
+                  tiers: CompanyTiers | None = None, established_only: bool = False) -> FilterResult:
+    res = _base_filters(job, cfg, needs_sponsorship)
+    if tiers is None:
+        return res
+    res.tier = tiers.classify(job)
+    if res.keep and established_only and not res.tier.established:
+        res.keep, res.reason = False, NOT_ESTABLISHED
+    return res
+
+
+def _base_filters(job: Job, cfg: dict, needs_sponsorship: bool) -> FilterResult:
+    """Questions 1-5 plus the warning flags."""
     title = job.title
     if job.closed:
         return FilterResult(False, "closed")
@@ -152,7 +171,7 @@ def apply_filters(job: Job, cfg: dict, needs_sponsorship: bool = False) -> Filte
         if re.search(pat, text, re.I):
             flags.append(flag)
     for flag in job.source_flags:
-        if flag not in flags:
+        if flag != FAANG_PLUS and flag not in flags:  # 🔥 is a company signal, not a warning
             flags.append(flag)
     if needs_sponsorship and ({"no_sponsorship", "us_citizenship"} & set(flags)):
         return FilterResult(False, "no sponsorship / citizens only", families, flags)

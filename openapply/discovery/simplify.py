@@ -14,6 +14,9 @@ Step by step:
    link; we keep the real one. A 🔒 means the role is closed and is skipped.
 6. Emoji flags become machine flags: 🛂 no sponsorship, 🇺🇸 US citizenship,
    🎓 advanced degree required.
+7. A 🔥 next to the company means SimplifyJobs counts it as "FAANG+". We keep
+   that as the source flag `faang_plus` (a ↳ row inherits it from the row
+   above), and the company-tier filter uses it as an "established" signal.
 If the 2027 repo ever disappears we fall back to the Summer 2026 repo.
 """
 
@@ -24,6 +27,7 @@ import re
 from ..http import PoliteClient
 from ..models import Job
 from ..text import html_to_text
+from ..filter.tiers import FAANG_PLUS
 from ._community import community_job
 
 URLS = [
@@ -53,6 +57,7 @@ def parse_simplify_readme(md: str, season: str = "Summer 2027") -> list[Job]:
     jobs: list[Job] = []
     section = None
     last_company = ""
+    last_hot = False
     # Split into chunks at section headings so each row knows its category.
     for chunk in re.split(r"(?m)^## ", md):
         heading = chunk.split("\n", 1)[0].strip()
@@ -66,10 +71,11 @@ def parse_simplify_readme(md: str, season: str = "Summer 2027") -> list[Job]:
                 continue
             company_cell, role_cell, loc_cell, app_cell = cells[:4]
             company = _clean(company_cell).replace("🔥", "").strip()
+            hot = "🔥" in company_cell
             if company in ("↳", ""):
-                company = last_company
+                company, hot = last_company, last_hot
             else:
-                last_company = company
+                last_company, last_hot = company, hot
             if "🔒" in row:
                 continue  # closed
             link = _apply_link(app_cell)
@@ -77,6 +83,8 @@ def parse_simplify_readme(md: str, season: str = "Summer 2027") -> list[Job]:
                 continue
             raw_title = _clean(role_cell)
             flags = [flag for emoji, flag in _FLAGS.items() if emoji in raw_title]
+            if hot or "🔥" in raw_title:
+                flags.append(FAANG_PLUS)
             title = raw_title
             for emoji in list(_FLAGS) + ["🔥"]:
                 title = title.replace(emoji, "")
