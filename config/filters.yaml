@@ -1,0 +1,37 @@
+# Filter rules. Patterns are case-insensitive regular expressions matched
+# against the job TITLE (role families, internship, exclusions) or
+# title + description (season, flags).
+
+# Co-ops are usually off-cycle (6-8 months); add |co-?op to include them.
+internship_pattern: '\b(intern|interns|internship)\b'
+
+# A job joins every family whose pattern matches its title.
+role_families:
+  pm: '\b(product manag\w*|product management|associate product manager|apm|product owner|product strategy|product intern|product analyst|product operations|technical program manag\w*)\b'
+  swe: '\b(software|swe|developer|full[- ]?stack|front[- ]?end|back[- ]?end|web engineer|mobile engineer|ios|android|platform engineer\w*|infrastructure engineer\w*|forward deployed|site reliability|sre|devops|cloud engineer\w*|software engineer\w*|security engineer\w*)\b'
+  ds: '\b(data scien\w*|data analy\w*|data engineer\w*|analytics|business intelligence|statistic\w*|quantitative analyst|decision scien\w*|economist|econometric\w*)\b'
+  ml: '\b(machine learning|ml|ai|artificial intelligence|deep learning|nlp|computer vision|research engineer|applied scien\w*|llm|genai|generative ai|ai/ml|ml/ai)\b'
+
+# Which families you want. Remove any you don't.
+wanted_families: [pm, swe, ds, ml]
+
+# Titles matching this are dropped even if they match a family.
+exclude_title: '\b(phd|ph\.d|doctoral|postdoc|mba|master''?s|ms/phd|ms|graduate intern|high school|new grad|hardware|asic|fpga|rtl|silicon|chip|electrical|mechanical|firmware|embedded|manufacturing|supply chain|mechatronic|analog|rf |optical|chemical|civil|co-?op|avionics|[4-8] months)\b'
+
+season:
+  year: 2027
+  term: summer
+  # Other terms/years in the TITLE mean "wrong cycle" -> drop.
+  wrong_term_pattern: '\b(fall|autumn|spring|winter)\b'
+  # If true, drop jobs whose season can't be confirmed from the source or text.
+  require_confirmed: false
+
+location:
+  allow_unknown: true   # keep postings with no location listed
+  allow_remote: true    # keep "Remote" with no country
+
+# Language that is flagged (not dropped) so you can decide.
+flags:
+  no_sponsorship: '(unable|not able|cannot|can ?not|will not|won''?t|does not|do not|is not able)\s+(to\s+)?(provide|offer|support)?\s*(visa\s+|immigration\s+|employment\s+)?sponsor|without (the need for )?(current or future |any )?(visa |employment |immigration )?sponsorship|not (be )?eligible for (visa |immigration )?sponsorship|sponsorship (is |will )?not (be )?(available|provided|offered)|no (visa )?sponsorship'
+  us_citizenship: 'u\.?s\.? citizen(ship)?\s+(is\s+)?required|must be (a )?u\.?s\.? citizen|us citizens only|united states citizen(ship)? (is )?required|requires? u\.?s\.? citizenship|security clearance|clearance (is )?required|ts/sci'
+  export_control: '\bitar\b|export control|u\.?s\.? person'

@@ -1,0 +1,208 @@
+{
+ "jobs": [
+  {
+   "id": "fa522ac5-fc9f-4ce1-a191-842496a235a2",
+   "title": "Software Engineer, Intern (Summer 2027)",
+   "department": "Engineering ",
+   "team": "Engineering ",
+   "employmentType": "FullTime",
+   "location": "Vienna, Austria",
+   "shouldDisplayCompensationOnJobPostings": true,
+   "secondaryLocations": [],
+   "publishedAt": "2026-09-10T15:39:22.153+00:00",
+   "isListed": true,
+   "isRemote": true,
+   "workplaceType": "Hybrid",
+   "address": {
+    "postalAddress": {
+     "addressRegion": "Austria",
+     "addressCountry": "Austria",
+     "addressLocality": "Vienna"
+    }
+   },
+   "jobUrl": "https://jobs.ashbyhq.com/sentry/fa522ac5-fc9f-4ce1-a191-842496a235a2",
+   "applyUrl": "https://jobs.ashbyhq.com/sentry/fa522ac5-fc9f-4ce1-a191-842496a235a2/application",
+   "descriptionHtml": "<h2><strong>About Sentry</strong></h2><p style=\"min-height:1.5em\">Software runs the world and the pace is faster than ever. Sentry helps developers fix errors and performance issues before users notice, so teams can spend less time firefighting and more time building.</p><p style=\"min-height:1.5em\">Trusted by 200,000+ organizations, Sentry is today\u2019s application monitoring standard and our team is building its AI-native future.</p><p style=\"min-height:1.5em\"></p><h2><strong>About the role</strong></h2><p style=\"min-height:1.5em\">Ever wondered what it's actually like to intern at a company millions of developers rely on?</p><p style=\"min-height:1.5em\">Software Engineering Interns at Sentry write real code on real projects that ship to production. No fetch-the-coffee. Just you, a team that actually trusts you, and a codebase used by millions of developers every day, including the ones building the AI tools everyone's talking about.</p><p style=\"min-height:1.5em\">You'll land on either an <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://docs.sentry.io/?original_referrer=https%3A%2F%2Fsentry.io%2Fcareers%2F%3Fteam%3DEngineering%2B\">SDK</a> team or Ingest \u2014 and either way, you're in the critical path, not on the sidelines. SDKs are where past interns have shipped <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://blog.sentry.io/meet-sentrys-2025-summer-interns/#simon-1-16\">async support for our Python SDK</a> and a faster <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://blog.sentry.io/meet-sentrys-2025-summer-interns/#martin-1-17\">AWS Lambda extension</a> \u2014 real code running inside frameworks developers use every day. Ingest is the backbone: you'll get hands-on with the pipelines (including our open-source <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://github.com/getsentry/relay\">Relay</a> and <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://github.com/getsentry/symbolicator\">Symbolicator</a>) that process millions of events every minute.</p><p style=\"min-height:1.5em\">This is a <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://sentry.io/careers/internships-and-early-careers/\">12+ week hybrid technical internship</a> that treats you like a full-time Sentry engineer \u2014 not just \"an intern.\" You'll be paired with a manager and a dedicated team mentor, get access to social events, and wrap up the program with a final presentation to the Sentry team.</p><p style=\"min-height:1.5em\">Don't just take our word for it \u2014 hear it from the people who lived it. Our <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://blog.sentry.io/life-at-sentry/\">intern blog</a> is full of stories from past Sentaurs about the features they shipped and the teams they joined, and more than a few of them liked it enough to come back as full-time new grads.</p><div style=\"min-height:1.2em;margin-top:0;margin-bottom:0\">\u00a0</div><h2><strong>In this role you will</strong></h2><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\">Be matched with one of our <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://sentry.io/platforms/\">SDKs</a>, Product or Ingest teams, based on your interests and experience</p></li><li><p style=\"min-height:1.5em\">Design, develop, and ship a programming solution that drives real values to customers</p></li><li><p style=\"min-height:1.5em\">Receive meaningful feedback, coaching, and mentorship from your manager and teammates</p></li></ul><div style=\"min-height:1.2em;margin-top:0;margin-bottom:0\">\u00a0</div><h2><strong>You\u2019ll love this job if you</strong></h2><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\">Want to be treated like an engineer, not \"an intern\"</p></li><li><p style=\"min-height:1.5em\">Care about how software actually works</p></li><li><p style=\"min-height:1.5em\">Are excited about where AI is taking software development and want to build in the middle of it</p></li><li><p style=\"min-height:1.5em\">Want mentorship that's real, not scheduled</p></li><li><p style=\"min-height:1.5em\">Like shipping things and seeing them used</p></li></ul><div style=\"min-height:1.2em;margin-top:0;margin-bottom:0\">\u00a0</div><h2><strong>Qualifications</strong></h2><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\">Currently enrolled in an undergraduate or graduate program in Computer Science or a related field</p></li><li><p style=\"min-height:1.5em\">At least one previous internship or equivalent hands-on experience</p></li><li><p style=\"min-height:1.5em\">Experience collaborating on an engineering project with a team (class, open source, work, it counts)</p></li><li><p style=\"min-height:1.5em\">Solid grasp of algorithms and data structures fundamentals</p></li><li><p style=\"min-height:1.5em\">Proficient in Python, JavaScript, or a similar dynamic language, picked up through internships, personal projects, or coursework</p></li><li><p style=\"min-height:1.5em\">Can pick up a new language or framework quickly and run with it</p></li><li><p style=\"min-height:1.5em\">Comfortable using GitHub: branching, pull requests, code review, the works</p></li><li><p style=\"min-height:1.5em\">Available to start summer 2027 and able to relocate to Vienna (Austria) for the duration of the internship (we'll help get you there and cover housing)</p></li></ul><div style=\"min-height:1.2em;margin-top:0;margin-bottom:0\">\u00a0</div><p style=\"min-height:1.5em\">We are obliged by law to quote the minimum wage of EUR 43.456,-- gross per year for this position, in accordance with the respective collective agreement (IT-KV). The base salary (or hourly wage range, if applicable) that Sentry reasonably expects to pay for this position is EUR \u20ac3,285.00 per month. A successful candidate will be eligible to participate in Sentry\u2019s employee benefit and perks programs applicable to the candidate\u2019s position (including medical, dental and vision insurance coverage as well as temporary relocation support). See<a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://sentry.io/careers/\"> <u>Sentry Benefits</u></a> for more details about the Company\u2019s benefit plans/programs.</p><p style=\"min-height:1.5em\"></p><h2><strong>Equal Opportunity at Sentry</strong></h2><p style=\"min-height:1.5em\">Sentry is committed to providing equal employment opportunities to its employees and candidates for employment regardless of race, color, ancestry, religion, sex, national origin, sexual orientation, age, citizenship, marital status, disability, gender identity, veteran status, or other legally-protected characteristic. This commitment includes the provision of reasonable accommodations to employees and candidates for employment with physical or mental disabilities who require such accommodations in order to (a) perform the essential functions of their jobs, or (b) seek employment with Sentry. We strive to build a diverse team, with an inclusive culture where every teammate can thrive. Sentry is an open-source company because we believe that everyone, everywhere, should have the ability and tools to make great software. Software should be accessible. That starts with making our industry accessible.</p><p style=\"min-height:1.5em\">If you need assistance or an accommodation due to a disability, you may contact us at <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"mailto:accommodations@sentry.io\">accommodations@sentry.io</a>.</p><p style=\"min-height:1.5em\">Want to learn more about how Sentry handles applicant data? Get the details in our <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://sentry.io/careers/applicantprivacy/\">Applicant Privacy Policy</a>.</p>",
+   "descriptionPlain": "ABOUT SENTRY\n\nSoftware runs the world and the pace is faster than ever. Sentry helps developers fix errors and performance issues before users notice, so teams can spend less time firefighting and more time building.\n\nTrusted by 200,000+ organizations, Sentry is today\u2019s application monitoring standard and our team is building its AI-native future.\n\n\n\n\nABOUT THE ROLE\n\nEver wondered what it's actually like to intern at a company millions of developers rely on?\n\nSoftware Engineering Interns at Sentry write real code on real projects that ship to production. No fetch-the-coffee. Just you, a team that actually trusts you, and a codebase used by millions of developers every day, including the ones building the AI tools everyone's talking about.\n\nYou'll land on either an SDK https://docs.sentry.io/?original_referrer=https%3A%2F%2Fsentry.io%2Fcareers%2F%3Fteam%3DEngineering%2B team or Ingest \u2014 and either way, you're in the critical path, not on the sidelines. SDKs are where past interns have shipped async support for our Python SDK https://blog.sentry.io/meet-sentrys-2025-summer-interns/#simon-1-16 and a faster AWS Lambda extension https://blog.sentry.io/meet-sentrys-2025-summer-interns/#martin-1-17 \u2014 real code running inside frameworks developers use every day. Ingest is the backbone: you'll get hands-on with the pipelines (including our open-source Relay https://github.com/getsentry/relay and Symbolicator https://github.com/getsentry/symbolicator) that process millions of events every minute.\n\nThis is a 12+ week hybrid technical internship https://sentry.io/careers/internships-and-early-careers/ that treats you like a full-time Sentry engineer \u2014 not just \"an intern.\" You'll be paired with a manager and a dedicated team mentor, get access to social events, and wrap up the program with a final presentation to the Sentry team.\n\nDon't just take our word for it \u2014 hear it from the people who lived it. Our intern blog https://blog.sentry.io/life-at-sentry/ is full of stories from past Sentaurs about the features they shipped and the teams they joined, and more than a few of them liked it enough to come back as full-time new grads.\n\n\u00a0\n\n\nIN THIS ROLE YOU WILL\n\n - Be matched with one of our SDKs https://sentry.io/platforms/, Product or Ingest teams, based on your interests and experience\n\n - Design, develop, and ship a programming solution that drives real values to customers\n\n - Receive meaningful feedback, coaching, and mentorship from your manager and teammates\n\n\u00a0\n\n\nYOU\u2019LL LOVE THIS JOB IF YOU\n\n - Want to be treated like an engineer, not \"an intern\"\n\n - Care about how software actually works\n\n - Are excited about where AI is taking software development and want to build in the middle of it\n\n - Want mentorship that's real, not scheduled\n\n - Like shipping things and seeing them used\n\n\u00a0\n\n\nQUALIFICATIONS\n\n - Currently enrolled in an undergraduate or graduate program in Computer Science or a related field\n\n - At least one previous internship or equivalent hands-on experience\n\n - Experience collaborating on an engineering project with a team (class, open source, work, it counts)\n\n - Solid grasp of algorithms and data structures fundamentals\n\n - Proficient in Python, JavaScript, or a similar dynamic language, picked up through internships, personal projects, or coursework\n\n - Can pick up a new language or framework quickly and run with it\n\n - Comfortable using GitHub: branching, pull requests, code review, the works\n\n - Available to start summer 2027 and able to relocate to Vienna (Austria) for the duration of the internship (we'll help get you there and cover housing)\n\n\u00a0\n\nWe are obliged by law to quote the minimum wage of EUR 43.456,-- gross per year for this position, in accordance with the respective collective agreement (IT-KV). The base salary (or hourly wage range, if applicable) that Sentry reasonably expects to pay for this position is EUR \u20ac3,285.00 per month. A successful candidate will be eligible to participate in Sentry\u2019s employee benefit and perks programs applicable to the candidate\u2019s position (including medical, dental and vision insurance coverage as well as temporary relocation support). See Sentry Benefits https://sentry.io/careers/ for more details about the Company\u2019s benefit plans/programs.\n\n\n\n\nEQUAL OPPORTUNITY AT SENTRY\n\nSentry is committed to providing equal employment opportunities to its employees and candidates for employment regardless of race, color, ancestry, religion, sex, national origin, sexual orientation, age, citizenship, marital status, disability, gender identity, veteran status, or other legally-protected characteristic. This commitment includes the provision of reasonable accommodations to employees and candidates for employment with physical or mental disabilities who require such accommodations in order to (a) perform the essential functions of their jobs, or (b) seek employment with Sentry. We strive to build a diverse team, with an inclusive culture where every teammate can thrive. Sentry is an open-source company because we believe that everyone, everywhere, should have the ability and tools to make great software. Software should be accessible. That starts with making our industry accessible.\n\nIf you need assistance or an accommodation due to a disability, you may contact us at accommodations@sentry.io.\n\nWant to learn more about how Sentry handles applicant data? Get the details in our Applicant Privacy Policy https://sentry.io/careers/applicantprivacy/.",
+   "compensation": {
+    "compensationTierSummary": "\u20ac2,800 \u2013 \u20ac3,285 per month",
+    "scrapeableCompensationSalarySummary": null,
+    "compensationTiers": [
+     {
+      "id": "bb0038a0-c907-4eb6-85eb-547ab0a414c5",
+      "tierSummary": "\u20ac2,800 \u2013 \u20ac3,285 per month",
+      "title": null,
+      "additionalInformation": null,
+      "components": [
+       {
+        "id": "1fb8f4f2-e1a1-4f94-bfb7-8b04dc8d99b0",
+        "summary": "\u20ac2,800 \u2013 \u20ac3,285 per month",
+        "compensationType": "Salary",
+        "interval": "1 MONTH",
+        "currencyCode": "EUR",
+        "minValue": 2800,
+        "maxValue": 3285
+       }
+      ]
+     }
+    ],
+    "summaryComponents": [
+     {
+      "compensationType": "Salary",
+      "interval": "1 MONTH",
+      "currencyCode": "EUR",
+      "minValue": 2800,
+      "maxValue": 3285
+     }
+    ]
+   }
+  },
+  {
+   "id": "81f09568-da7d-4ed1-8283-614f846c9b00",
+   "title": "Staff Machine Learning Engineer, AI",
+   "department": "Engineering ",
+   "team": "Engineering ",
+   "employmentType": "FullTime",
+   "location": "San Francisco, California",
+   "shouldDisplayCompensationOnJobPostings": true,
+   "secondaryLocations": [],
+   "publishedAt": "2026-09-22T18:21:27.232+00:00",
+   "isListed": true,
+   "isRemote": true,
+   "workplaceType": "Hybrid",
+   "address": {
+    "postalAddress": {
+     "addressRegion": "California",
+     "addressCountry": "United States",
+     "addressLocality": "San Francisco"
+    }
+   },
+   "jobUrl": "https://jobs.ashbyhq.com/sentry/81f09568-da7d-4ed1-8283-614f846c9b00",
+   "applyUrl": "https://jobs.ashbyhq.com/sentry/81f09568-da7d-4ed1-8283-614f846c9b00/application",
+   "descriptionHtml": "<h2><strong>About Sentry</strong></h2><p style=\"min-height:1.5em\">Software runs the world and the pace is faster than ever. Sentry helps developers fix errors and performance issues before users notice, so teams can spend less time firefighting and more time building.</p><p style=\"min-height:1.5em\">Trusted by 200,000+ organizations, Sentry is today\u2019s application monitoring standard and our team is building its AI-native future.</p><p style=\"min-height:1.5em\"></p><h2><strong>About the role</strong></h2><p style=\"min-height:1.5em\">As a Staff Machine Learning Engineer on Sentry\u2019s AI/ML team, you\u2019ll be directly responsible for developing the models and agents used to make our product smarter and more capable. This role is crucial; you will be at the forefront of integrating AI and machine learning into our core products, from issue triage and resolution to predictive analytics for application performance monitoring. Your work will help companies around the globe gain actionable insights into their software, enabling them to build better products, faster.</p><p style=\"min-height:1.5em\"></p><h2><strong>In this role you will</strong></h2><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\">Build state-of-the-art agentic AI systems to triage, debug, and solve real production issues</p></li><li><p style=\"min-height:1.5em\">Leverage Sentry\u2019s novel (and massive) dataset of errors, spans, and profiles</p></li><li><p style=\"min-height:1.5em\">Own the development of major initiatives in the AI/ML space</p></li></ul><p style=\"min-height:1.5em\"></p><h2><strong>You'll love this job if you</strong></h2><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\">Are driven by impact and enjoy working on high-stakes, high-visibility projects</p></li><li><p style=\"min-height:1.5em\">Enjoy building things. You will have the opportunity to join the AI/ML team as one of its foundational members</p></li><li><p style=\"min-height:1.5em\">Thrive in cross-functional teams and enjoy building features alongside developers and product teams</p></li></ul><p style=\"min-height:1.5em\"></p><h2><strong>Qualifications</strong></h2><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\">Minimum 4+ years of professional experience with a MS/PhD degree in computer science, machine learning, or a related field</p></li><li><p style=\"min-height:1.5em\">Minimum 6+ years of professional experience with Bachelor\u2019s degree in computer science, machine learning, or a related field</p></li><li><p style=\"min-height:1.5em\">Demonstrated expertise building production-grade agentic systems and tools</p></li><li><p style=\"min-height:1.5em\">You are comfortable writing production quality code (we use Python)</p></li><li><p style=\"min-height:1.5em\">Expertise with deep learning frameworks (we use PyTorch)</p></li><li><p style=\"min-height:1.5em\">Familiarity in deploying machine learning models at scale in production environments</p></li><li><p style=\"min-height:1.5em\">Experience in writing technical documentation, mentoring, and presenting to technical audiences</p></li><li><p style=\"min-height:1.5em\">Proven track record of owning a system, feature, or component, leading or collaborating with multiple engineers and teams</p></li></ul><p style=\"min-height:1.5em\"></p><p style=\"min-height:1.5em\">The base salary range (or hourly wage range, if applicable) that Sentry reasonably expects to pay for this position is $240,000 to $400,000. A successful candidate\u2019s actual base salary (or hourly wage) amount will be determined by a variety of relevant factors including, without limitation, the candidate\u2019s work location, education, work and other relevant experience, skills, and job-related knowledge. A successful candidate will be eligible to participate in Sentry\u2019s employee benefit plans/programs applicable to the candidate\u2019s position (including incentive compensation, equity grants, paid time off, and group health insurance coverage). See <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://sentry.io/careers/\">Sentry Benefits</a> for more details about the Company\u2019s benefit plans/programs.</p><p style=\"min-height:1.5em\">\u00a0</p><p style=\"min-height:1.5em\"></p><h2><strong>Equal Opportunity at Sentry</strong></h2><p style=\"min-height:1.5em\">Sentry is committed to providing equal employment opportunities to its employees and candidates for employment regardless of race, color, ancestry, religion, sex, national origin, sexual orientation, age, citizenship, marital status, disability, gender identity, veteran status, or other legally-protected characteristic. This commitment includes the provision of reasonable accommodations to employees and candidates for employment with physical or mental disabilities who require such accommodations in order to (a) perform the essential functions of their jobs, or (b) seek employment with Sentry. We strive to build a diverse team, with an inclusive culture where every teammate can thrive. Sentry is an open-source company because we believe that everyone, everywhere, should have the ability and tools to make great software. Software should be accessible. That starts with making our industry accessible.</p><p style=\"min-height:1.5em\">If you need assistance or an accommodation due to a disability, you may contact us at <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"mailto:accommodations@sentry.io\">accommodations@sentry.io</a>.</p><p style=\"min-height:1.5em\">Want to learn more about how Sentry handles applicant data? Get the details in our <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://sentry.io/careers/applicantprivacy/\">Applicant Privacy Policy</a>.</p>",
+   "descriptionPlain": "ABOUT SENTRY\n\nSoftware runs the world and the pace is faster than ever. Sentry helps developers fix errors and performance issues before users notice, so teams can spend less time firefighting and more time building.\n\nTrusted by 200,000+ organizations, Sentry is today\u2019s application monitoring standard and our team is building its AI-native future.\n\n\n\n\nABOUT THE ROLE\n\nAs a Staff Machine Learning Engineer on Sentry\u2019s AI/ML team, you\u2019ll be directly responsible for developing the models and agents used to make our product smarter and more capable. This role is crucial; you will be at the forefront of integrating AI and machine learning into our core products, from issue triage and resolution to predictive analytics for application performance monitoring. Your work will help companies around the globe gain actionable insights into their software, enabling them to build better products, faster.\n\n\n\n\nIN THIS ROLE YOU WILL\n\n - Build state-of-the-art agentic AI systems to triage, debug, and solve real production issues\n\n - Leverage Sentry\u2019s novel (and massive) dataset of errors, spans, and profiles\n\n - Own the development of major initiatives in the AI/ML space\n\n\n\n\nYOU'LL LOVE THIS JOB IF YOU\n\n - Are driven by impact and enjoy working on high-stakes, high-visibility projects\n\n - Enjoy building things. You will have the opportunity to join the AI/ML team as one of its foundational members\n\n - Thrive in cross-functional teams and enjoy building features alongside developers and product teams\n\n\n\n\nQUALIFICATIONS\n\n - Minimum 4+ years of professional experience with a MS/PhD degree in computer science, machine learning, or a related field\n\n - Minimum 6+ years of professional experience with Bachelor\u2019s degree in computer science, machine learning, or a related field\n\n - Demonstrated expertise building production-grade agentic systems and tools\n\n - You are comfortable writing production quality code (we use Python)\n\n - Expertise with deep learning frameworks (we use PyTorch)\n\n - Familiarity in deploying machine learning models at scale in production environments\n\n - Experience in writing technical documentation, mentoring, and presenting to technical audiences\n\n - Proven track record of owning a system, feature, or component, leading or collaborating with multiple engineers and teams\n\n\n\nThe base salary range (or hourly wage range, if applicable) that Sentry reasonably expects to pay for this position is $240,000 to $400,000. A successful candidate\u2019s actual base salary (or hourly wage) amount will be determined by a variety of relevant factors including, without limitation, the candidate\u2019s work location, education, work and other relevant experience, skills, and job-related knowledge. A successful candidate will be eligible to participate in Sentry\u2019s employee benefit plans/programs applicable to the candidate\u2019s position (including incentive compensation, equity grants, paid time off, and group health insurance coverage). See Sentry Benefits https://sentry.io/careers/ for more details about the Company\u2019s benefit plans/programs.\n\n\u00a0\n\n\n\n\nEQUAL OPPORTUNITY AT SENTRY\n\nSentry is committed to providing equal employment opportunities to its employees and candidates for employment regardless of race, color, ancestry, religion, sex, national origin, sexual orientation, age, citizenship, marital status, disability, gender identity, veteran status, or other legally-protected characteristic. This commitment includes the provision of reasonable accommodations to employees and candidates for employment with physical or mental disabilities who require such accommodations in order to (a) perform the essential functions of their jobs, or (b) seek employment with Sentry. We strive to build a diverse team, with an inclusive culture where every teammate can thrive. Sentry is an open-source company because we believe that everyone, everywhere, should have the ability and tools to make great software. Software should be accessible. That starts with making our industry accessible.\n\nIf you need assistance or an accommodation due to a disability, you may contact us at accommodations@sentry.io.\n\nWant to learn more about how Sentry handles applicant data? Get the details in our Applicant Privacy Policy https://sentry.io/careers/applicantprivacy/.",
+   "compensation": {
+    "compensationTierSummary": "$240K \u2013 $400K \u2022 Offers Equity \u2022 Plus up to 20% bonus",
+    "scrapeableCompensationSalarySummary": "$240K - $400K",
+    "compensationTiers": [
+     {
+      "id": "427b2d51-928f-4f2a-a335-e617dc17e9de",
+      "tierSummary": "$240K \u2013 $400K \u2022 Offers Equity \u2022 Plus up to 20% bonus",
+      "title": null,
+      "additionalInformation": "Plus up to 20% bonus",
+      "components": [
+       {
+        "id": "81776062-0b8c-4c25-8f5a-2a6379d2b73e",
+        "summary": "Offers Equity",
+        "compensationType": "EquityPercentage",
+        "interval": "NONE",
+        "currencyCode": null,
+        "minValue": null,
+        "maxValue": null
+       },
+       {
+        "id": "6432d040-4749-4774-8052-58b91c9305e1",
+        "summary": "$240K \u2013 $400K",
+        "compensationType": "Salary",
+        "interval": "1 YEAR",
+        "currencyCode": "USD",
+        "minValue": 240000,
+        "maxValue": 400000
+       }
+      ]
+     }
+    ],
+    "summaryComponents": [
+     {
+      "compensationType": "EquityPercentage",
+      "interval": "NONE",
+      "currencyCode": null,
+      "minValue": null,
+      "maxValue": null
+     },
+     {
+      "compensationType": "Salary",
+      "interval": "1 YEAR",
+      "currencyCode": "USD",
+      "minValue": 240000,
+      "maxValue": 400000
+     }
+    ]
+   }
+  },
+  {
+   "id": "6eb8d5f2-977e-4ff4-bdbe-fccb8747b5d7",
+   "title": "Senior Software Engineer, AI",
+   "department": "Engineering ",
+   "team": "Engineering ",
+   "employmentType": "FullTime",
+   "location": "San Francisco, California",
+   "shouldDisplayCompensationOnJobPostings": true,
+   "secondaryLocations": [],
+   "publishedAt": "2025-10-30T21:42:25.950+00:00",
+   "isListed": true,
+   "isRemote": true,
+   "workplaceType": "Hybrid",
+   "address": {
+    "postalAddress": {
+     "addressRegion": "California",
+     "addressCountry": "United States",
+     "addressLocality": "San Francisco"
+    }
+   },
+   "jobUrl": "https://jobs.ashbyhq.com/sentry/6eb8d5f2-977e-4ff4-bdbe-fccb8747b5d7",
+   "applyUrl": "https://jobs.ashbyhq.com/sentry/6eb8d5f2-977e-4ff4-bdbe-fccb8747b5d7/application",
+   "descriptionHtml": "<h2><strong>About Sentry</strong></h2><p style=\"min-height:1.5em\">Software runs the world and the pace is faster than ever. Sentry helps developers fix errors and performance issues before users notice, so teams can spend less time firefighting and more time building.</p><p style=\"min-height:1.5em\">Trusted by 200,000+ organizations, Sentry is today\u2019s application monitoring standard and our team is building its AI-native future.</p><p style=\"min-height:1.5em\"></p><h2><strong>About the role</strong></h2><p style=\"min-height:1.5em\">As a Senior Software Engineer on Sentry\u2019s AI team, you\u2019ll be directly responsible for developing the platform used by our debugging agents. This role is crucial; you will be at the forefront of integrating AI and machine learning into our core products, from issue triage and resolution to predictive analytics for application performance monitoring. Your work will help companies around the globe gain actionable insights into their software, enabling them to build better products, faster.</p><p style=\"min-height:1.5em\"></p><h2><strong>In this role you will</strong></h2><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\">Build state-of-the-art agentic AI platforms to triage, debug, and solve real production issues</p></li><li><p style=\"min-height:1.5em\">Leverage Sentry\u2019s novel (and massive) dataset of errors, spans, and profiles</p></li><li><p style=\"min-height:1.5em\">Own the development of major initiatives in the AI/ML space</p><p style=\"min-height:1.5em\"></p></li></ul><h2><strong>You'll love this job if you</strong></h2><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\">Are driven by impact and enjoy working on high-stakes, high-visibility projects</p></li><li><p style=\"min-height:1.5em\">Enjoy building things. You will have the opportunity to join the AI/ML team as one of its foundational members</p></li><li><p style=\"min-height:1.5em\">Thrive in cross-functional teams and enjoy building features alongside developers and product teams</p><p style=\"min-height:1.5em\"></p></li></ul><h2><strong>Qualifications</strong></h2><ul style=\"min-height:1.5em\"><li><p style=\"min-height:1.5em\">Minimum 5+ years of professional experience with Bachelor\u2019s degree in computer science, machine learning, or a related field</p></li><li><p style=\"min-height:1.5em\">Demonstrated expertise building production-grade agentic systems and tools</p></li><li><p style=\"min-height:1.5em\">You are comfortable writing production quality code (we use Python and Typescript)</p></li><li><p style=\"min-height:1.5em\">Familiarity with deep learning frameworks (we use PyTorch)</p></li><li><p style=\"min-height:1.5em\">Familiarity in deploying machine learning models at scale in production environments</p><p style=\"min-height:1.5em\"></p></li></ul><p style=\"min-height:1.5em\">The base salary range (or hourly wage range, if applicable) that Sentry reasonably expects to pay for this position is <strong>$155,000 to $400,000 USD</strong>. A successful candidate\u2019s actual base salary (or hourly wage) amount will be determined by a variety of relevant factors including, without limitation, the candidate\u2019s work location, education, work and other relevant experience, skills, and job-related knowledge. A successful candidate will be eligible to participate in Sentry\u2019s employee benefit plans/programs applicable to the candidate\u2019s position (including incentive compensation, equity grants, paid time off, and group health insurance coverage). See <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://sentry.io/careers/\">Sentry Benefits</a> for more details about the Company\u2019s benefit plans/programs.</p><p style=\"min-height:1.5em\"></p><h2><strong>Equal Opportunity at Sentry</strong></h2><p style=\"min-height:1.5em\">Sentry is committed to providing equal employment opportunities to its employees and candidates for employment regardless of race, color, ancestry, religion, sex, national origin, sexual orientation, age, citizenship, marital status, disability, gender identity, veteran status, or other legally-protected characteristic. This commitment includes the provision of reasonable accommodations to employees and candidates for employment with physical or mental disabilities who require such accommodations in order to (a) perform the essential functions of their jobs, or (b) seek employment with Sentry. We strive to build a diverse team, with an inclusive culture where every teammate can thrive. Sentry is an open-source company because we believe that everyone, everywhere, should have the ability and tools to make great software. Software should be accessible. That starts with making our industry accessible.</p><p style=\"min-height:1.5em\">If you need assistance or an accommodation due to a disability, you may contact us at <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"mailto:accommodations@sentry.io\">accommodations@sentry.io</a>.</p><p style=\"min-height:1.5em\">Want to learn more about how Sentry handles applicant data? Get the details in our <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://sentry.io/careers/applicantprivacy/\">Applicant Privacy Policy</a>.</p>",
+   "descriptionPlain": "ABOUT SENTRY\n\nSoftware runs the world and the pace is faster than ever. Sentry helps developers fix errors and performance issues before users notice, so teams can spend less time firefighting and more time building.\n\nTrusted by 200,000+ organizations, Sentry is today\u2019s application monitoring standard and our team is building its AI-native future.\n\n\n\n\nABOUT THE ROLE\n\nAs a Senior Software Engineer on Sentry\u2019s AI team, you\u2019ll be directly responsible for developing the platform used by our debugging agents. This role is crucial; you will be at the forefront of integrating AI and machine learning into our core products, from issue triage and resolution to predictive analytics for application performance monitoring. Your work will help companies around the globe gain actionable insights into their software, enabling them to build better products, faster.\n\n\n\n\nIN THIS ROLE YOU WILL\n\n - Build state-of-the-art agentic AI platforms to triage, debug, and solve real production issues\n\n - Leverage Sentry\u2019s novel (and massive) dataset of errors, spans, and profiles\n\n - Own the development of major initiatives in the AI/ML space\n   \n   \n\n\nYOU'LL LOVE THIS JOB IF YOU\n\n - Are driven by impact and enjoy working on high-stakes, high-visibility projects\n\n - Enjoy building things. You will have the opportunity to join the AI/ML team as one of its foundational members\n\n - Thrive in cross-functional teams and enjoy building features alongside developers and product teams\n   \n   \n\n\nQUALIFICATIONS\n\n - Minimum 5+ years of professional experience with Bachelor\u2019s degree in computer science, machine learning, or a related field\n\n - Demonstrated expertise building production-grade agentic systems and tools\n\n - You are comfortable writing production quality code (we use Python and Typescript)\n\n - Familiarity with deep learning frameworks (we use PyTorch)\n\n - Familiarity in deploying machine learning models at scale in production environments\n   \n   \n\nThe base salary range (or hourly wage range, if applicable) that Sentry reasonably expects to pay for this position is $155,000 to $400,000 USD. A successful candidate\u2019s actual base salary (or hourly wage) amount will be determined by a variety of relevant factors including, without limitation, the candidate\u2019s work location, education, work and other relevant experience, skills, and job-related knowledge. A successful candidate will be eligible to participate in Sentry\u2019s employee benefit plans/programs applicable to the candidate\u2019s position (including incentive compensation, equity grants, paid time off, and group health insurance coverage). See Sentry Benefits https://sentry.io/careers/ for more details about the Company\u2019s benefit plans/programs.\n\n\n\n\nEQUAL OPPORTUNITY AT SENTRY\n\nSentry is committed to providing equal employment opportunities to its employees and candidates for employment regardless of race, color, ancestry, religion, sex, national origin, sexual orientation, age, citizenship, marital status, disability, gender identity, veteran status, or other legally-protected characteristic. This commitment includes the provision of reasonable accommodations to employees and candidates for employment with physical or mental disabilities who require such accommodations in order to (a) perform the essential functions of their jobs, or (b) seek employment with Sentry. We strive to build a diverse team, with an inclusive culture where every teammate can thrive. Sentry is an open-source company because we believe that everyone, everywhere, should have the ability and tools to make great software. Software should be accessible. That starts with making our industry accessible.\n\nIf you need assistance or an accommodation due to a disability, you may contact us at accommodations@sentry.io.\n\nWant to learn more about how Sentry handles applicant data? Get the details in our Applicant Privacy Policy https://sentry.io/careers/applicantprivacy/.",
+   "compensation": {
+    "compensationTierSummary": "$155K \u2013 $400K \u2022 Offers Equity \u2022 Plus up to 20% bonus",
+    "scrapeableCompensationSalarySummary": "$155K - $400K",
+    "compensationTiers": [
+     {
+      "id": "bc14e3fc-157a-4f88-b1e9-65a85501d3c5",
+      "tierSummary": "$155K \u2013 $400K \u2022 Offers Equity \u2022 Plus up to 20% bonus",
+      "title": null,
+      "additionalInformation": "Plus up to 20% bonus",
+      "components": [
+       {
+        "id": "619ecb90-f893-426a-ade4-7f8141cdb112",
+        "summary": "Offers Equity",
+        "compensationType": "EquityPercentage",
+        "interval": "NONE",
+        "currencyCode": null,
+        "minValue": null,
+        "maxValue": null
+       },
+       {
+        "id": "6b88fb61-db04-4d47-a8ce-f507e35a2202",
+        "summary": "$155K \u2013 $400K",
+        "compensationType": "Salary",
+        "interval": "1 YEAR",
+        "currencyCode": "USD",
+        "minValue": 155000,
+        "maxValue": 400000
+       }
+      ]
+     }
+    ],
+    "summaryComponents": [
+     {
+      "compensationType": "EquityPercentage",
+      "interval": "NONE",
+      "currencyCode": null,
+      "minValue": null,
+      "maxValue": null
+     },
+     {
+      "compensationType": "Salary",
+      "interval": "1 YEAR",
+      "currencyCode": "USD",
+      "minValue": 155000,
+      "maxValue": 400000
+     }
+    ]
+   }
+  }
+ ],
+ "apiVersion": "1"
+}

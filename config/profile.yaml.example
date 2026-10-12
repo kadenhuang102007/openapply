@@ -1,0 +1,58 @@
+# Copy to config/profile.yaml (gitignored) and edit. openapply never stores passwords.
+
+name:
+  first: Jane
+  last: Doe
+  preferred: Jane
+email: jane_doe@university.edu
+phone: "(555)-555-0100"
+linkedin: https://www.linkedin.com/in/janedoe
+github: https://github.com/janedoe
+website: ""
+location: City, ST
+school: Your University
+degree: B.S.
+majors: [Data Science]
+graduation: May 2028
+
+# Phone number for `openapply daily` iMessage alerts.
+alert_phone: "+15555550100"
+alerts:
+  min_score: 0   # only alert on new jobs with a baseline score >= this
+
+# Fill these in yourself. openapply uses needs_sponsorship_now_or_future only to
+# filter out "no sponsorship" postings; it NEVER answers these on a form.
+work_authorization:
+  authorized_to_work_in_us: ""          # yes / no
+  needs_sponsorship_now_or_future: ""   # yes / no
+
+# Demographic / EEO answers are intentionally not stored. Answer them yourself on each form.
+
+# Resume variants. `families` decides which resume goes with which role family.
+resumes:
+  variants:
+    pm:
+      label: PM / Growth (Master)
+      path: resumes/Resume_PM.tex
+      pdf: resumes/Resume_PM.pdf
+      families: [pm]
+    swe_data:
+      label: SWE / Data
+      path: resumes/Resume_SWE.tex
+      pdf: resumes/Resume_SWE.pdf
+      families: [swe, ds, ml]
+
+# Common open-ended questions `openapply tailor` drafts answers for.
+# {company} and {title} are filled in per job.
+questions:
+  - Why are you interested in this role at {company}?
+  - Tell us about a project you're proud of.
+  - Describe a time you used data to make a decision.
+  - What would you hope to learn during this internship?
+
+# Google Sheet sync (`openapply export --to sheets`). The sheet id can also be
+# set as GOOGLE_SHEET_ID in .env.
+sheets:
+  sheet_id: ""
+  worksheet: ""        # blank = first tab
+  yes_value: "Yes"     # what your sheet uses for a checked box ("Yes", "TRUE", "x", ...)

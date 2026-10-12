@@ -1,0 +1,23 @@
+# Environments and secrets
+.venv/
+.env
+*.db
+*.db-journal
+
+# Personal data (examples only are committed)
+config/profile.yaml
+resumes/*
+!resumes/README.md
+generated/
+logs/*
+!logs/.gitkeep
+data/
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+.DS_Store

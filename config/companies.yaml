@@ -1,0 +1,24 @@
+# Companies to pull directly from their public ATS job-board API.
+# Each entry is a board slug; add `name:` to override the display name.
+# Verified responding on 2026-10-11 (HTTP 200 with a jobs list).
+#
+#   greenhouse -> https://boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true
+#   lever      -> https://api.lever.co/v0/postings/{slug}?mode=json
+#   ashby      -> https://api.ashbyhq.com/posting-api/job-board/{slug}?includeCompensation=true
+boards:
+  greenhouse:
+    - {slug: andurilindustries, name: Anduril}
+    - {slug: figma, name: Figma}
+    - {slug: fiveringsllc, name: Five Rings}
+    - {slug: ctccampusboard, name: Chicago Trading Company}
+    - {slug: datadog, name: Datadog}
+    - {slug: coinbase, name: Coinbase}
+    - {slug: roblox, name: Roblox}
+    - {slug: lyft, name: Lyft}
+    - {slug: waymo, name: Waymo}
+  ashby:
+    - {slug: quadrillion-labs, name: Quadrillion Labs}
+    - {slug: sentry, name: Sentry}
+    - {slug: melius, name: Melius}
+    - {slug: opusclip, name: OpusClip}
+  lever: []
