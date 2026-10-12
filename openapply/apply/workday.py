@@ -53,11 +53,12 @@ from __future__ import annotations
 import re
 import time
 from dataclasses import dataclass, field
+from datetime import date
 from pathlib import Path
 
 from ..config import DATA_DIR
 from ..models import Job
-from .answers import SENSITIVE, SavedAnswers, allowed, choose_many, choose_option, is_yes, why_not
+from .answers import SENSITIVE, SavedAnswers, agree_option, allowed, choose_many, choose_option, is_yes, why_not
 from .filler import FieldLog, FillReport, _safe_click_option, classify_field, print_report, profile_values
 from .session import LABEL_JS, Waiter, merge_capture
 
@@ -450,15 +451,16 @@ def _option_texts(opts, limit: int = 300) -> list[str]:
     return [opts.nth(i).inner_text().strip() for i in range(min(opts.count(), limit))]
 
 
-def _pick_dropdown(page, f: dict, wanted: list[str]) -> str | None:
-    """Open a Workday dropdown button, click the option best matching one of `wanted`, else close it."""
+def _pick_dropdown(page, f: dict, wanted: list[str], chooser=None) -> str | None:
+    """Open a Workday dropdown button, click the option best matching one of `wanted`, else close it.
+    `chooser(texts)` can pick an option first (e.g. the affirmative one for an agreement)."""
     _click(_loc(page, f), "open dropdown")
     _sleep(page, 600)
     for attempt in range(2):
         opts = page.locator('[role="listbox"] [role="option"]').locator("visible=true")
         texts = _option_texts(opts)
-        for w in wanted:
-            pick = choose_option(w, texts)
+        picks = ([chooser(texts)] if chooser else []) + [choose_option(w, texts) for w in wanted]
+        for pick in picks:
             if pick:
                 opt = opts.nth(texts.index(pick))
                 _safe_click_option(opt)
@@ -515,6 +517,77 @@ def _fill_date(page, month_f: dict | None, year_f: dict | None, when) -> str | N
     return "/".join(done)
 
 
+def _date_key(f: dict) -> str:
+    return f"{f['fname']}|{f['group']}|{f['panel']}"
+
+
+def _date_groups(fields: list[dict]) -> dict[str, dict[str, dict]]:
+    """Month/day/year spin buttons that belong to the same date box, keyed by _date_key."""
+    out: dict[str, dict[str, dict]] = {}
+    for f in fields:
+        if f["kind"] in ("month", "day", "year"):
+            out.setdefault(_date_key(f), {})[f["kind"]] = f
+    return out
+
+
+def parse_full_date(text) -> tuple[int | None, int | None, int | None]:
+    """'today' -> today's (month, day, year); '05/15/2028', '2028-05-15', 'May 15, 2028' -> (5, 15, 2028);
+    'May 2028' -> (5, None, 2028)."""
+    s = str(text or "").strip().lower()
+    if not s:
+        return None, None, None
+    if s == "today":
+        t = date.today()
+        return t.month, t.day, t.year
+    m = re.fullmatch(r"(\d{1,2})/(\d{1,2})/(\d{4})", s)
+    if m:
+        return int(m.group(1)), int(m.group(2)), int(m.group(3))
+    m = re.fullmatch(r"(\d{4})-(\d{1,2})-(\d{1,2})", s)
+    if m:
+        return int(m.group(2)), int(m.group(3)), int(m.group(1))
+    m = re.fullmatch(r"([a-z]+)\.? (\d{1,2}),? (\d{4})", s)
+    if m:
+        mon = next((n for k, n in MONTHS.items() if re.match(rf"{k}", m.group(1))), None)
+        if mon:
+            return mon, int(m.group(2)), int(m.group(3))
+    mon, year, _ = parse_month_year(s)
+    return mon, None, year
+
+
+def _fill_date_parts(page, parts: dict[str, dict], mon, day, year) -> str | None:
+    """Type month/day/year into a Workday date box. Returns what was typed, or None when the answer
+    does not have every part the box needs (then the box is left for you)."""
+    if year is None or ("month" in parts and mon is None) or ("day" in parts and day is None):
+        return None
+    typed, loc = [], None
+    for kind, val, width in (("month", mon, 2), ("day", day, 2), ("year", year, 4)):
+        f = parts.get(kind)
+        if f is None:
+            continue
+        text = f"{val:0{width}d}"
+        loc = _loc(page, f)
+        _click(loc, f"date {kind}")
+        loc.press_sequentially(text, delay=30)
+        typed.append(text)
+    if loc is not None:
+        loc.blur()
+    return "/".join(typed)
+
+
+def _fill_saved_text(flow: "WorkdayFlow", step: str, f: dict, label: str) -> bool:
+    """Fill a text box from saved answers (signature name, a learned free-text answer...).
+    Never for sensitive topics: free-text authorization/demographic questions always stay yours."""
+    if SENSITIVE.search(label):
+        return False
+    match = flow.saved.lookup(label, flow.company)
+    if not allowed(match, flow.profile) or match.sensitive or not isinstance(match.answer, str):
+        return False
+    _fill_text(flow.page, f, match.answer)
+    flow.handled.add(flow.ident(f))
+    flow.log(step, f, label, "filled", f"saved answer `{match.key}` -> {match.answer!r}")
+    return True
+
+
 def _check(page, f: dict) -> None:
     loc = _loc(page, f)
     try:
@@ -567,16 +640,19 @@ def _answer_choice(flow: WorkdayFlow, step: str, f: dict, group: list[dict]) -> 
         return False
     ans = match.answer
     pick = None
+    # "Yes" to an agreement / acknowledgement means: pick the affirmative option, however it is worded.
+    agreeing = match.key in ("agreements", "privacy_ack") and isinstance(ans, str) and is_yes(ans)
     if f["kind"] == "dropdown" and isinstance(ans, str):
-        pick = _pick_dropdown(page, f, [ans])
+        pick = _pick_dropdown(page, f, [ans], chooser=agree_option if agreeing else None)
     elif f["kind"] == "multiselect":
         pick = _pick_multiselect(page, f, ans if isinstance(ans, list) else [ans])
     elif f["kind"] == "select" and isinstance(ans, str):
-        pick = choose_option(ans, f["options"])
+        pick = agree_option(f["options"]) if agreeing else choose_option(ans, f["options"])
         if pick:
             _loc(page, f).select_option(label=pick)
     elif f["kind"] == "radio" and isinstance(ans, str):
-        pick = choose_option(ans, [g["option"] for g in group])
+        opts = [g["option"] for g in group]
+        pick = agree_option(opts) if agreeing else choose_option(ans, opts)
         if pick:
             _check(page, next(g for g in group if g["option"] == pick))
     elif f["kind"] == "checkbox":
@@ -614,11 +690,37 @@ def _leftovers(flow: WorkdayFlow, step: str, fields: list[dict]) -> list[dict]:
     need: list[dict] = []
     groups = _choice_groups(fields)
     seen_groups: set[str] = set()
+    dates = _date_groups(fields)
+    seen_dates: set[str] = set()
     for f in fields:
         if flow.ident(f) in flow.handled or f["kind"] in ("file",):
             continue
         label = f["question"] if f["kind"] in ("radio", "checkbox", "dropdown", "select") else f["label"]
         label = label or f["fname"] or f["id"]
+        if f["kind"] in ("month", "day", "year"):
+            # One date box = 2-3 spin buttons; handle them together (graduation date, "today's date", ...).
+            dk = _date_key(f)
+            if dk in seen_dates:
+                continue
+            seen_dates.add(dk)
+            parts = dates[dk]
+            for p in parts.values():
+                flow.handled.add(flow.ident(p))
+            if any(p["value"] for p in parts.values()):
+                flow.log(step, f, label, "skipped", "already had a value")
+                continue
+            match = flow.saved.lookup(label, flow.company)
+            if allowed(match, flow.profile) and isinstance(match.answer, str):
+                typed = _fill_date_parts(flow.page, parts, *parse_full_date(match.answer))
+                if typed:
+                    flow.log(step, f, label, "filled", f"saved answer `{match.key}` -> {typed}")
+                    continue
+                flow.log(step, f, label, "skipped", f"saved answer `{match.key}` = {match.answer!r} does not fit this box "
+                         + ("(needs MM/DD/YYYY)" if "day" in parts else "(needs MM/YYYY)"))
+            else:
+                flow.log(step, f, label, "skipped", "date: " + why_not(match))
+            need.append(f)
+            continue
         if f["kind"] in ("radio", "checkbox"):
             gk = f"{f['kind']}|{f['name'] or f['question']}|{f['group']}{f['panel']}"
             if gk in seen_groups:
@@ -641,6 +743,8 @@ def _leftovers(flow: WorkdayFlow, step: str, fields: list[dict]) -> list[dict]:
             flow.log(step, f, label, "skipped", "password: never filled")
         elif f["value"]:
             flow.log(step, f, label, "skipped", "already had a value")
+        elif f["kind"] in ("text", "textarea") and _fill_saved_text(flow, step, f, label):
+            continue
         elif SENSITIVE.search(label):
             flow.log(step, f, label, "skipped", "sensitive (authorization/demographic): left for you")
             need.append(f)

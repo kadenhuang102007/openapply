@@ -9,12 +9,26 @@ topics:
   country: ""                 # e.g. United States
   degree: ""                  # e.g. Bachelor's
   major: ""                   # e.g. Data Science
-  graduation_date: ""         # e.g. May 2028
+  graduation_date: ""         # e.g. 05/15/2028 (use MM/DD/YYYY so date boxes that need a day can be filled)
   completed_internship: ""    # Yes / No
   previously_worked_here: ""  # "Have you worked for <company> before?" (usually No)
   willing_to_relocate: ""     # Yes / No
   sms_opt_in: ""              # Yes / No
   privacy_ack: ""             # Yes = tick "I acknowledge / I agree" boxes (blank = you tick them)
+
+  # Agreements and signatures. Yes = pick the affirmative option ("I agree", "Yes, I accept") on
+  # NDA / arbitration-style questions and type your name + today's date where a form asks for a signature.
+  # Read the agreements once before turning this on; blank = the form stops and asks you.
+  agreements: ""              # Yes / blank
+  signature_name: ""          # e.g. Jane Doe
+  todays_date: ""             # "today" = fill today's date
+
+  # Standard compliance questions
+  current_status: ""          # e.g. Current Student
+  uses_workday: ""            # "do you use or work on the Workday system in your current job?" Yes / No
+  government_employee: ""     # current or former government employee? Yes / No
+  related_to_employee: ""     # related to a current employee / customer employee / government official? Yes / No
+  export_control: ""          # citizen/national/resident of a sanctioned country? Yes / No
 
   # Sensitive: only used with use_saved_answers: true
   authorized_to_work_us: ""   # Yes / No

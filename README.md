@@ -177,6 +177,21 @@ This works on Greenhouse, Lever, Ashby, and Workday.
 
 ---
 
+### Agreements, signatures, dates, and the standard compliance questions
+
+Workday (and some other boards) ask the same things on every application: "do you agree to the NDA /
+arbitration agreement?", "enter your name", "today's date", "expected graduation date", "do you work on the
+Workday system?", "are you a government employee?", "are you related to an employee?", export-control
+residency. All of these are saved-answer topics now:
+
+- `agreements: Yes` picks the affirmative option ("I agree", "Yes, I accept") on agreement questions. Read
+  the agreements once before turning this on; leave it blank and the form stops for you instead.
+- `signature_name` and `todays_date: today` fill signature boxes.
+- Date boxes (month / day / year spin buttons) are filled from `graduation_date` or `todays_date`; use
+  MM/DD/YYYY so boxes that want a day can be filled. A date that does not fit is left for you.
+- Free-text questions are filled from saved answers too, except on sensitive topics (authorization,
+  sponsorship, demographics), which always stay yours.
+
 ## Auto-submit (opt-in)
 
 Off by default. To use it, set `auto_submit: true` in `config/profile.yaml` **and** run a command that asks for it: `openapply apply <id> --submit`, `openapply add <url>`, or `openapply autopilot`.

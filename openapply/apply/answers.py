@@ -37,6 +37,7 @@ import difflib
 import json
 import re
 from dataclasses import dataclass, field
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -58,6 +59,19 @@ SENSITIVE = re.compile(
 # (topic key, pattern on the normalized question, sensitive?). First match wins,
 # so the more specific topics come first ("transgender" before "gender").
 TOPICS: list[tuple[str, str, bool]] = [
+    # Standard compliance / agreement questions (Workday asks most of these on every application).
+    ("export_control", r"export control|citizen, national or resident of|\bsanction", False),
+    ("related_to_employee",
+     r"related to (a |an )?(current |former )?(<company> |\w+ )?(employee|government official)|relative(s)? (who |that )?(work|employ)"
+     r"|family member(s)? (who |that )?(work|employ)", False),
+    ("government_employee",
+     r"(employee|employed|official) of (the )?(united states|u s|us|federal|a|any)?( \w+)? ?government|government (employee|official|contractor)", False),
+    ("uses_workday", r"use or work on (the )?(<company>|workday)|(<company>|workday) system", False),
+    ("agreements",
+     r"non.?disclosure|\bnda\b|arbitration|(read|reviewed)(,| and)? (understood(,| and)? )?(and )?agree|agree to the .*agreement|do you agree to", False),
+    ("signature_name", r"(enter|type|provide|print) your (full |legal )?name|signature|\be ?sign(ature)?\b|sign (your|here|below)", False),
+    ("todays_date", r"today'?s date|date of (signature|signing|application|submission)|current date|date signed", False),
+    ("current_status", r"best describes your current (status|situation)|current status|student status", False),
     ("transgender", r"transgender", True),
     ("hispanic_latinx", r"hispanic|latin[oax]", True),
     ("race", r"\brace\b|ethnicit", True),
@@ -131,7 +145,10 @@ def answer_text(value: Any) -> str | list[str]:
         return ""
     if isinstance(value, list):
         return [str(answer_text(v)) for v in value if answer_text(v)]
-    return str(value).strip()
+    s = str(value).strip()
+    if s.lower() == "today":  # e.g. "Please enter today's date"
+        return date.today().strftime("%m/%d/%Y")
+    return s
 
 
 @dataclass
@@ -223,6 +240,18 @@ def choose_option(answer: str, options: list[str]) -> str | None:
     if len(scored) > 1 and abs(scored[0][0] - scored[1][0]) < 1e-9 and _opt(scored[0][1]) != _opt(scored[1][1]):
         return None  # two options fit equally well: let the human pick
     return scored[0][1]
+
+
+def agree_option(options: list[str]) -> str | None:
+    """For "do you agree?" questions answered Yes: the one affirmative option ("I agree", "Yes, I accept"...).
+    None when there isn't exactly one clear affirmative, so the human decides."""
+    good = [o for o in options
+            if re.search(r"\b(agree|accept|yes|acknowledge)\b", o, re.I)
+            and not re.search(r"\b(not|don't|do not|disagree|decline|no)\b", o, re.I)
+            and not PLACEHOLDER.match(o.strip())]
+    if len(good) == 1:
+        return good[0]
+    return choose_option("yes", options)
 
 
 def choose_many(answer: str | list[str], options: list[str]) -> list[str]:
